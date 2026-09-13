@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('feriantes', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre');
+            $table->string('apellido');
+            $table->string('nombre_emprendimiento')->nullable();
+            $table->string('rubro'); //artesano|masas|manualidades|revendedor
+            $table->string('rubro_otro')->nullable(); //si elige "otro"
+            $table->string('telefono',20);
+            $table->string('instagram')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('tiktok')->nullable();
+            $table->text('consulta')->nullable();
+            $table->enum('estado',['pendiente','aprovado','rechazado'])->default('pendiente');
+            $table->boolean('asistencia_confirmada')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('feriantes');
+    }
+};
