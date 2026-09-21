@@ -54,7 +54,7 @@ Route::post('/logout',[CoordinadorController::class, 'logout'])->middleware('aut
 
 //Panel coordinador-CRUD completo//
 
-Route::Middleware('auth')->prefix('coordinador')->group(function(){
+Route::middleware('auth')->prefix('coordinador')->group(function(){
     Route::get('/',[CoordinadorController::class,'index']);
 
 
