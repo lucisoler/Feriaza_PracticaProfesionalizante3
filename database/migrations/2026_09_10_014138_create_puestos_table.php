@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedTinyInteger('numero')->unique();
             $table->enum('estado',['libre','reservado'])->default('libre');
-            $table->foreignId('feriantes')->nullOnDelete();
+            $table->foreignId('feriante_id')->nullable()->constrained('feriantes')->nullOnDelete();
             $table->timestamps();
         });
     }

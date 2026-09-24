@@ -16,7 +16,7 @@ class Feriante extends Model
 
 protected $casts = [
     'password'=>'hashed',
-    'asistencia_confirmada'=>'booleean'
+    'asistencia_confirmada'=>'boolean'
 
 ];
 
