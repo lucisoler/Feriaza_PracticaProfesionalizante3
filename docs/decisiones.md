@@ -11,7 +11,7 @@ Cada decisión registra el contexto, lo que se decidió y sus consecuencias. Est
 
 ## D-02 — API REST propia junto con Inertia
 
-- **Estado:** Propuesta
+- **Estado:** Aceptada
 - **Contexto:** El dispositivo exige un backend con API propia documentada. Con Inertia, las pantallas usan rutas web, que no constituyen una API.
 - **Decisión:** Exponer los recursos principales como endpoints REST en `routes/api.php`, autenticados con Laravel Sanctum, y mantener Inertia para la navegación de las pantallas.
 - **Consecuencias:** Se cumple el requisito de API propia y se pueden probar los endpoints con un cliente REST y con pruebas automatizadas. Implica una capa de servicios compartida para no duplicar la lógica entre controladores web y de API.
