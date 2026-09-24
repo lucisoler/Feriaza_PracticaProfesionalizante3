@@ -14,7 +14,7 @@ class PuestoSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <=30; $i++){
-        Puesto::create(['numero'=> $i,'estado' =>'libre']);
+        Puesto::updateOrCreate(['numero'=> $i,'estado' =>'libre']);
         }
     }
 }
