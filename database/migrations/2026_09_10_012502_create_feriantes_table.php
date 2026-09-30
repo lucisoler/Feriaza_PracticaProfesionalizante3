@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('facebook')->nullable();
             $table->string('tiktok')->nullable();
             $table->text('consulta')->nullable();
-            $table->enum('estado',['pendiente','aprovado','rechazado'])->default('pendiente');
+            $table->enum('estado',['pendiente','aprobado','rechazado'])->default('pendiente');
             $table->boolean('asistencia_confirmada')->default(false);
             $table->timestamps();
         });
