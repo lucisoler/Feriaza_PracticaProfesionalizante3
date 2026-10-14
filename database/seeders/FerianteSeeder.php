@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Categoria;
 use App\Models\Feriante;
 use Illuminate\Database\Seeder;
 
@@ -13,18 +14,20 @@ class FerianteSeeder extends Seeder
      * - Todos pueden iniciar sesión con la contraseña "Feriante123".
      * - El primero (feriante@feriaza.test) es el usuario de prueba
      *   documentado en docs/instalacion.md.
-     * - Los valores de "rubro" y "estado" respetan exactamente los que
-     *   aceptan las validaciones de los controladores.
+     * - Cada feriante indica el nombre de su categoría; el seeder lo
+     *   convierte en categoria_id. Requiere que CategoriaSeeder ya se haya ejecutado.
      */
     public function run(): void
     {
+        $categorias = Categoria::pluck('id', 'nombre');
+
         $feriantes = [
             [
                 'nombre'                => 'Feriante',
                 'apellido'              => 'De Prueba',
                 'email'                 => 'feriante@feriaza.test',
                 'telefono'              => '3644100000',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Artesanías de Prueba',
                 'instagram'             => '@artesanias.prueba',
@@ -36,7 +39,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'González',
                 'email'                 => 'maria.gonzalez@feriaza.test',
                 'telefono'              => '3644101111',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Arte María',
                 'instagram'             => '@arte.maria',
@@ -48,7 +51,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Suárez',
                 'email'                 => 'jose.suarez@feriaza.test',
                 'telefono'              => '3644102222',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => null,
                 'instagram'             => null,
@@ -60,7 +63,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Estévez',
                 'email'                 => 'majo.estevez@feriaza.test',
                 'telefono'              => '3644103333',
-                'rubro'                 => 'masas',
+                'categoria'             => 'Masas',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Masas Majo',
                 'instagram'             => '@masas.majo',
@@ -72,7 +75,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Carrizo',
                 'email'                 => 'laura.carrizo@feriaza.test',
                 'telefono'              => '3644104444',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Tejidos Laura',
                 'instagram'             => null,
@@ -84,7 +87,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Ortiz',
                 'email'                 => 'luis.ortiz@feriaza.test',
                 'telefono'              => '3644105555',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Vasos Ortiz',
                 'instagram'             => '@vasos.ortiz',
@@ -96,7 +99,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Benítez',
                 'email'                 => 'carina.benitez@feriaza.test',
                 'telefono'              => '3644106666',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Stock Carina',
                 'instagram'             => null,
@@ -108,7 +111,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Romero',
                 'email'                 => 'silvia.romero@feriaza.test',
                 'telefono'              => '3644107777',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Todo Silvia',
                 'instagram'             => '@todo.silvia',
@@ -120,7 +123,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Sosa',
                 'email'                 => 'gabriel.sosa@feriaza.test',
                 'telefono'              => '3644108888',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Artesanías Gabriel',
                 'instagram'             => '@gabriel.art',
@@ -132,7 +135,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Medina',
                 'email'                 => 'lucas.medina@feriaza.test',
                 'telefono'              => '3644109999',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Soldaduras Medina',
                 'instagram'             => '@lucas.sold',
@@ -144,7 +147,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Ferreyra',
                 'email'                 => 'amalia.ferreyra@feriaza.test',
                 'telefono'              => '3644111110',
-                'rubro'                 => 'masas',
+                'categoria'             => 'Masas',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Amalia Masas',
                 'instagram'             => '@amalia.masitas',
@@ -156,7 +159,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Quiroga',
                 'email'                 => 'jeremias.quiroga@feriaza.test',
                 'telefono'              => '3644112221',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Jere Artesanías',
                 'instagram'             => '@jere.artesanias',
@@ -168,7 +171,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'López',
                 'email'                 => 'luciana.lopez@feriaza.test',
                 'telefono'              => '3644113332',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Luciana Manualidades',
                 'instagram'             => '@luciana.manualidades',
@@ -180,7 +183,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Barrios',
                 'email'                 => 'ignacio.barrios@feriaza.test',
                 'telefono'              => '3644114443',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => null,
                 'instagram'             => null,
@@ -192,7 +195,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Llanos',
                 'email'                 => 'alicia.llanos@feriaza.test',
                 'telefono'              => '3644115554',
-                'rubro'                 => 'masas',
+                'categoria'             => 'Masas',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Masitas de Alicia',
                 'instagram'             => '@alicia.masitas',
@@ -204,7 +207,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Aguirre',
                 'email'                 => 'cristina.aguirre@feriaza.test',
                 'telefono'              => '3644116665',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Cris Artesanías',
                 'instagram'             => '@cris.artesanias',
@@ -216,7 +219,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Torres',
                 'email'                 => 'violeta.torres@feriaza.test',
                 'telefono'              => '3644117776',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Vilu Alhajas',
                 'instagram'             => '@vilu.alhajas',
@@ -228,7 +231,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Paz',
                 'email'                 => 'nicolas.paz@feriaza.test',
                 'telefono'              => '3644118887',
-                'rubro'                 => 'artesano',
+                'categoria'             => 'Artesanos',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Macetas Nico',
                 'instagram'             => '@macetas.nico',
@@ -240,7 +243,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Pereyra',
                 'email'                 => 'ruth.pereyra@feriaza.test',
                 'telefono'              => '3644119998',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => null,
                 'instagram'             => null,
@@ -252,7 +255,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Zamora',
                 'email'                 => 'maria.zamora@feriaza.test',
                 'telefono'              => '3644121109',
-                'rubro'                 => 'masas',
+                'categoria'             => 'Masas',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'María Masas',
                 'instagram'             => '@maria.masas',
@@ -264,7 +267,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Vera',
                 'email'                 => 'carmen.vera@feriaza.test',
                 'telefono'              => '3644122220',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Joyería Vera',
                 'instagram'             => '@joyeria.vera',
@@ -276,7 +279,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Vega',
                 'email'                 => 'roxana.vega@feriaza.test',
                 'telefono'              => '3644123331',
-                'rubro'                 => 'otro',
+                'categoria'             => 'Otro',
                 'rubro_otro'            => 'Peluches de tela',
                 'nombre_emprendimiento' => 'Peluches Roxy',
                 'instagram'             => '@peluches.roxy',
@@ -288,7 +291,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Juárez',
                 'email'                 => 'patricio.juarez@feriaza.test',
                 'telefono'              => '3644124442',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => null,
                 'instagram'             => null,
@@ -300,7 +303,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Acosta',
                 'email'                 => 'leonel.acosta@feriaza.test',
                 'telefono'              => '3644125553',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Leo Manualidades',
                 'instagram'             => '@leo.manualidades',
@@ -312,7 +315,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Maldonado',
                 'email'                 => 'nora.maldonado@feriaza.test',
                 'telefono'              => '3644126664',
-                'rubro'                 => 'revendedor',
+                'categoria'             => 'Revendedores',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => 'Nora Bazar',
                 'instagram'             => null,
@@ -324,7 +327,7 @@ class FerianteSeeder extends Seeder
                 'apellido'              => 'Molina',
                 'email'                 => 'florencia.molina@feriaza.test',
                 'telefono'              => '3644127775',
-                'rubro'                 => 'manualidades',
+                'categoria'             => 'Manualidades',
                 'rubro_otro'            => null,
                 'nombre_emprendimiento' => null,
                 'instagram'             => null,
@@ -334,8 +337,10 @@ class FerianteSeeder extends Seeder
         ];
 
         foreach ($feriantes as $datos) {
-            // updateOrCreate: si el seeder se ejecuta de nuevo, no duplica feriantes.
-            // La contraseña se hashea sola por el cast 'hashed' del modelo Feriante.
+            $datos['categoria_id'] = $categorias[$datos['categoria']];
+            unset($datos['categoria']);
+
+            
             Feriante::updateOrCreate(
                 ['email' => $datos['email']],
                 $datos + ['password' => 'Feriante123']
