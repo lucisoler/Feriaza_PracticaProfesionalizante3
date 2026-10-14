@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Puesto;
 use App\Models\Feriante;
-
+use App\Models\Categoria;
 
 class FerianteController extends Controller
 {
@@ -21,8 +21,8 @@ class FerianteController extends Controller
             'nombre'=>'required|string|max:100',
             'apellido'=>'required|string|max:100',
             'nombre_emprendimiento'=>'nullable|sring|max:150',
-            'rubro'=>'required|in:artesano,masas,manualidades,revendedor,otro',
-            'rubro_otro'=> 'nullable|required_if:rubro,otro|string|max:100',
+            'consulta_id'=>'required|exists:categorias,id',
+            'rubro_otro'=>'nullable|required_if:categoria_id' .Categoria::idOtro() . '|string|max:100',
             'telefono'=>'required|string|max:20',
             'instagram'=>'nullable|string|',
             'facebook'=>'nullable|string|',
@@ -50,7 +50,7 @@ class FerianteController extends Controller
  $msg=urlencode(
     "nuevo feriante:\n"
     . "{$feriante->nombre} {$feriante->apellido}\n"
-    . "Rubro:{$feriante->rubro}\n"
+    . "Categoría:{$feriante->categoria->nombre}\n"
     . "puesto N:{$puesto->numero}\n"
     . "Tel:{$feriante->telefono}"
     );
