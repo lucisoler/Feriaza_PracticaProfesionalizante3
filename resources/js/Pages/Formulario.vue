@@ -23,19 +23,18 @@
         <p v-if="form.errors.password" class="text-red-500 text-xs">{{ form.errors.password }}</p>
         <button @click="paso=2" class="w-full bg-green-700 text-white py-2 rounded-lg mt-2">Siguiente</button>
       </div>
-
-      <div v-if="paso===2">
+            <div v-if="paso===2">
         <h2 class="font-bold text-lg mb-4">Tu emprendimiento</h2>
         <input v-model="form.nombre_emprendimiento" placeholder="Nombre del emprendimiento (opcional)" class="w-full border rounded-lg p-2 mb-3" />
-        <select v-model="form.rubro" class="w-full border rounded-lg p-2 mb-3">
-          <option value="">-- Selecciona tu rubro --</option>
-          <option value="artesano">Artesano</option>
-          <option value="masas">Masas / Panaderia</option>
-          <option value="manualidades">Manualidades</option>
-          <option value="revendedor">Revendedor</option>
-          <option value="otro">Otro</option>
+        <select v-model="form.categoria_id" class="w-full border rounded-lg p-2 mb-3">
+          <option :value="null">-- Elegí tu categoría --</option>
+          <option v-for="c in categorias" :key="c.id" :value="c.id">
+            {{ c.nombre }}
+          </option>
         </select>
-        <input v-if="form.rubro==='otro'" v-model="form.rubro_otro" placeholder="Especifica tu rubro *" class="w-full border rounded-lg p-2 mb-3" />
+        <input v-if="esOtro" v-model="form.rubro_otro" placeholder="Especificá tu rubro *" class="w-full border rounded-lg p-2 mb-3" />
+        <p v-if="form.errors.categoria_id" class="text-red-500 text-xs mb-2">{{ form.errors.categoria_id }}</p>
+        <p v-if="form.errors.rubro_otro" class="text-red-500 text-xs mb-2">{{ form.errors.rubro_otro }}</p>
         <input v-model="form.instagram" placeholder="Instagram (opcional)" class="w-full border rounded-lg p-2 mb-2" />
         <input v-model="form.facebook" placeholder="Facebook (opcional)" class="w-full border rounded-lg p-2 mb-2" />
         <input v-model="form.tiktok" placeholder="TikTok (opcional)" class="w-full border rounded-lg p-2 mb-3" />
@@ -71,9 +70,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { ref, Computed } from 'vue'
+import { useForm, usePage } from '@inertiajs/vue3'
 import MapaPuestos from '../Components/MapaPuestos.vue'
+
+
 
 const props = defineProps({
   puestos: {
@@ -92,7 +93,7 @@ const form = useForm({
   password: '',
   password_confirmation: '',
   nombre_emprendimiento: '',
-  rubro: '',
+  categoria_id: null,
   rubro_otro: '',
   instagram: '',
   facebook: '',
@@ -101,6 +102,11 @@ const form = useForm({
   puesto_id: null,
   asistencia_confirmada: false,
 })
+
+const categorias = computed(() => usePage().props.categorias)
+const esOtro = computed(() =>
+  categorias.value.find(c => c.id === form.categoria_id)?.nombre === 'Otro'
+)
 
 function enviar() {
   form.post('/feriantes')
