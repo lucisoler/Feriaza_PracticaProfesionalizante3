@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Categoria;
 
 
 
@@ -134,8 +135,8 @@ return $request->validate([
     ],
 'password'=>$idFeriante ? 'nullable|string|min:6': 'required|string|min:6',
 'nombre_emprendimiento'=>'nullable|string|max:150',
-'rubro'=>'required|in:artesano,masas,manualidades,revendedor,otro',
-'rubro_otro'=>'nullable|required_if:rubro,otro|string|max:100',
+'categoria_id' => 'required|exists:categorias,id',
+'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
 'telefono'=>'required|string|max:20',
 'instagram'=>'nullable|string|max:100',
 'facebook'=>'nullable|string|max:100',

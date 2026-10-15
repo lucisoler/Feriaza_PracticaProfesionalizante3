@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,9 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             //
+            'categorias'=>fn()=>Categoria::orderBy('prioridad')
+            ->orderBy('nombre')
+            ->get(['id','nombre','recibe_mesa']),
         ];
     }
 }
