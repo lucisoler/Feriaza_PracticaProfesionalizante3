@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             CategoriaSeeder::class,
             PuestoSeeder::class,
             FerianteSeeder::class,
+            EventoSeeder::class,
+            InscripcionSeeder::class,
         ]);
     }
 }
