@@ -7,13 +7,20 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Categoria;
+use App\Models\Feriante;
 
 class MiCuentaController extends Controller
 {
     public function show():Response
     {
-        $feriante=Auth::guard('feriante')->user()->load('puesto');
+        $feriante = Auth::guard('feriante')->user();
 
+        if (! $feriante instanceof Feriante) {
+            abort(401);
+        }
+
+        $feriante->load('puesto');
 
         return Inertia::render('Feriante/MiCuenta',[
             'feriante'=>$feriante,
@@ -22,15 +29,18 @@ class MiCuentaController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $feriante =Auth::guard('feriante')->user();
+        $feriante = Auth::guard('feriante')->user();
 
+        if (! $feriante instanceof Feriante) {
+            abort(401);
+        }
 
         $data =$request->validate([
          'nombre'=>'required|string|max:100',
             'apellido'=>'required|string|max:100',
             'nombre_emprendimiento'=>'nullable|sring|max:150',
-            'rubro'=>'required|in:artesano,masas,manualidades,revendedor,otro',
-            'rubro_otro'=> 'nullable|required_if:rubro,otro|string|max:100',
+            'categoria_id' => 'required|exists:categorias,id',
+            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
             'telefono'=>'required|string|max:20',
             'instagram'=>'nullable|string|',
             'facebook'=>'nullable|string|',
@@ -50,7 +60,11 @@ class MiCuentaController extends Controller
 
     public function destroy(Request $request):RedirectResponse
     {
-        $feriante=Auth::guard('feriante')->user();
+        $feriante = Auth::guard('feriante')->user();
+
+        if (! $feriante instanceof Feriante) {
+            abort(401);
+        }
 
         if($feriante->puesto){
             $feriante->puesto->update([
