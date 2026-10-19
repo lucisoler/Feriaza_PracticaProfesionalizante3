@@ -37,17 +37,15 @@ return [
     |
     */
 
-    'feriante'=>[
-        'driver'=>'session',
-        'provider'=>'feriantes',
-
-    ],
-
-
-    'guards' => [
+       'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+
+        'feriante' => [
+            'driver' => 'session',
+            'provider' => 'feriantes',
         ],
     ],
 
@@ -74,11 +72,12 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+       'feriantes' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Feriante::class,
+        ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

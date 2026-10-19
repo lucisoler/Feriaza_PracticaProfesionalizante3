@@ -1,80 +1,153 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-md p-6 w-full max-w-lg">
+  <main class="fz-pagina">
+    <header class="fz-marca">
+      <p class="fz-marca-nombre">Feriaza</p>
+      <p class="fz-marca-lugar">Feria de la Plaza San Martín, Juan José Castelli, portal del Impenetrable</p>
+    </header>
 
-      <div class="flex justify-between mb-6 text-xs font-semibold">
-        <span :class="paso >= 1 ? 'text-green-700' : 'text-gray-400'">1. Datos</span>
-        <span :class="paso >= 2 ? 'text-green-700' : 'text-gray-400'">2. Emprendimiento</span>
-        <span :class="paso >= 3 ? 'text-green-700' : 'text-gray-400'">3. Puesto</span>
-      </div>
+    <section class="fz-tarjeta">
+      <div class="fz-guarda"></div>
 
-      <div v-if="paso===1">
-        <h2 class="font-bold text-lg mb-4">Datos personales</h2>
-        <input v-model="form.nombre" placeholder="Nombre *" class="w-full border rounded-lg p-2 mb-3" />
-        <input v-model="form.apellido" placeholder="Apellido *" class="w-full border rounded-lg p-2 mb-3" />
-        <input v-model="form.telefono" placeholder="Telefono *" class="w-full border rounded-lg p-2 mb-3" />
-        <hr class="my-4" />
-        <p class="text-xs text-gray-500 mb-2">Con esto vas a poder entrar despues a Mi cuenta.</p>
-        <input v-model="form.email" type="email" placeholder="Email *" class="w-full border rounded-lg p-2 mb-3" />
-        <input v-model="form.password" type="password" placeholder="Contrasena *" class="w-full border rounded-lg p-2 mb-3" />
-        <input v-model="form.password_confirmation" type="password" placeholder="Repetir contrasena *" class="w-full border rounded-lg p-2 mb-3" />
-        <p v-if="form.errors.nombre" class="text-red-500 text-xs">{{ form.errors.nombre }}</p>
-        <p v-if="form.errors.email" class="text-red-500 text-xs">{{ form.errors.email }}</p>
-        <p v-if="form.errors.password" class="text-red-500 text-xs">{{ form.errors.password }}</p>
-        <button @click="paso=2" class="w-full bg-green-700 text-white py-2 rounded-lg mt-2">Siguiente</button>
-      </div>
-            <div v-if="paso===2">
-        <h2 class="font-bold text-lg mb-4">Tu emprendimiento</h2>
-        <input v-model="form.nombre_emprendimiento" placeholder="Nombre del emprendimiento (opcional)" class="w-full border rounded-lg p-2 mb-3" />
-        <select v-model="form.categoria_id" class="w-full border rounded-lg p-2 mb-3">
-          <option :value="null">-- Elegí tu categoría --</option>
-          <option v-for="c in categorias" :key="c.id" :value="c.id">
-            {{ c.nombre }}
-          </option>
-        </select>
-        <input v-if="esOtro" v-model="form.rubro_otro" placeholder="Especificá tu rubro *" class="w-full border rounded-lg p-2 mb-3" />
-        <p v-if="form.errors.categoria_id" class="text-red-500 text-xs mb-2">{{ form.errors.categoria_id }}</p>
-        <p v-if="form.errors.rubro_otro" class="text-red-500 text-xs mb-2">{{ form.errors.rubro_otro }}</p>
-        <input v-model="form.instagram" placeholder="Instagram (opcional)" class="w-full border rounded-lg p-2 mb-2" />
-        <input v-model="form.facebook" placeholder="Facebook (opcional)" class="w-full border rounded-lg p-2 mb-2" />
-        <input v-model="form.tiktok" placeholder="TikTok (opcional)" class="w-full border rounded-lg p-2 mb-3" />
-        <textarea v-model="form.consulta" placeholder="Buzon de consultas (opcional)" class="w-full border rounded-lg p-2 mb-3 h-20"></textarea>
-        <div class="flex gap-2">
-          <button @click="paso=1" class="flex-1 border border-green-700 text-green-700 py-2 rounded-lg">Atras</button>
-          <button @click="paso=3" class="flex-1 bg-green-700 text-white py-2 rounded-lg">Siguiente</button>
+      <div class="fz-tarjeta-cuerpo">
+        <!-- Indicador de pasos -->
+        <ol class="fz-pasos">
+          <li v-for="(nombre, i) in pasos" :key="nombre" class="fz-paso" :class="clasePaso(i + 1)">
+            {{ i + 1 }}. {{ nombre }}
+          </li>
+        </ol>
+
+        <!-- PASO 1: datos personales y acceso -->
+        <div v-if="paso === 1">
+          <h1 class="fz-titulo">Tus datos</h1>
+          <p class="fz-ayuda">Los usamos para avisarte cuando aprueben tu inscripción.</p>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Nombre</span>
+            <input v-model="form.nombre" class="fz-input" :class="{ 'fz-input-error': form.errors.nombre }" autocomplete="given-name" />
+            <span v-if="form.errors.nombre" class="fz-error">{{ form.errors.nombre }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Apellido</span>
+            <input v-model="form.apellido" class="fz-input" :class="{ 'fz-input-error': form.errors.apellido }" autocomplete="family-name" />
+            <span v-if="form.errors.apellido" class="fz-error">{{ form.errors.apellido }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Teléfono</span>
+            <input v-model="form.telefono" type="tel" class="fz-input" :class="{ 'fz-input-error': form.errors.telefono }" autocomplete="tel" />
+            <span v-if="form.errors.telefono" class="fz-error">{{ form.errors.telefono }}</span>
+          </label>
+
+          <hr class="fz-separador" />
+          <p class="fz-ayuda">Con tu email y contraseña vas a poder entrar después a "Mi cuenta".</p>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Email</span>
+            <input v-model="form.email" type="email" class="fz-input" :class="{ 'fz-input-error': form.errors.email }" autocomplete="email" />
+            <span v-if="form.errors.email" class="fz-error">{{ form.errors.email }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Contraseña <span class="fz-opcional">(mínimo 8 caracteres)</span></span>
+            <input v-model="form.password" type="password" class="fz-input" :class="{ 'fz-input-error': form.errors.password }" autocomplete="new-password" />
+            <span v-if="form.errors.password" class="fz-error">{{ form.errors.password }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Repetí la contraseña</span>
+            <input v-model="form.password_confirmation" type="password" class="fz-input" autocomplete="new-password" />
+          </label>
+
+          <div class="fz-acciones">
+            <button type="button" class="fz-boton" @click="paso = 2">Seguir con tu emprendimiento</button>
+          </div>
+        </div>
+
+        <!-- PASO 2: emprendimiento y categoría -->
+        <div v-if="paso === 2">
+          <h1 class="fz-titulo">Tu emprendimiento</h1>
+          <p class="fz-ayuda">La categoría define la prioridad para asignar mesa.</p>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Nombre del emprendimiento <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.nombre_emprendimiento" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Categoría</span>
+            <select v-model="form.categoria_id" class="fz-input" :class="{ 'fz-input-error': form.errors.categoria_id }">
+              <option :value="null">Elegí una categoría</option>
+              <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+            </select>
+            <span v-if="form.errors.categoria_id" class="fz-error">{{ form.errors.categoria_id }}</span>
+          </label>
+
+          <label v-if="esOtro" class="fz-campo">
+            <span class="fz-etiqueta">¿Qué vendés?</span>
+            <input v-model="form.rubro_otro" class="fz-input" :class="{ 'fz-input-error': form.errors.rubro_otro }" />
+            <span v-if="form.errors.rubro_otro" class="fz-error">{{ form.errors.rubro_otro }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Instagram <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.instagram" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Facebook <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.facebook" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">TikTok <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.tiktok" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Consulta para el coordinador <span class="fz-opcional">(opcional)</span></span>
+            <textarea v-model="form.consulta" class="fz-input" rows="3"></textarea>
+          </label>
+
+          <div class="fz-acciones">
+            <button type="button" class="fz-boton-secundario" @click="paso = 1">Volver</button>
+            <button type="button" class="fz-boton" @click="paso = 3">Elegir mesa</button>
+          </div>
+        </div>
+
+        <!-- PASO 3: mapa de mesas -->
+        <div v-if="paso === 3">
+          <h1 class="fz-titulo">Tu mesa</h1>
+          <p class="fz-ayuda">Tocá una mesa libre del plano de la plaza.</p>
+
+          <MapaPuestos :puestos="puestos" @seleccionar="form.puesto_id = $event" />
+
+          <p v-if="form.puesto_id" class="fz-confirmacion">
+            Elegiste la mesa {{ puestos.find(p => p.id === form.puesto_id)?.numero }}.
+          </p>
+          <span v-if="form.errors.puesto_id" class="fz-error">{{ form.errors.puesto_id }}</span>
+
+          <label class="fz-check">
+            <input type="checkbox" v-model="form.asistencia_confirmada" />
+            <span>Confirmo mi asistencia. Sé que tengo 1 hora de tolerancia desde el inicio de la feria; después corresponde una sanción.</span>
+          </label>
+
+          <div class="fz-acciones">
+            <button type="button" class="fz-boton-secundario" @click="paso = 2">Volver</button>
+            <button type="button" class="fz-boton" :disabled="!form.puesto_id || !form.asistencia_confirmada || form.processing" @click="enviar">
+              {{ form.processing ? 'Enviando…' : 'Enviar inscripción' }}
+            </button>
+          </div>
         </div>
       </div>
-
-      <div v-if="paso===3">
-        <h2 class="font-bold text-lg mb-2">Elegi tu puesto</h2>
-        <p class="text-xs text-gray-500 mb-3">Verde = libre | Rojo = reservado</p>
-        <MapaPuestos :puestos="puestos" @seleccionar="form.puesto_id=$event" />
-        <p v-if="form.puesto_id" class="text-green-700 text-sm mt-2 font-semibold">
-          Puesto N {{ puestos.find(p=>p.id===form.puesto_id)?.numero }} seleccionado
-        </p>
-        <p v-if="form.errors.puesto_id" class="text-red-500 text-xs mt-1">{{ form.errors.puesto_id }}</p>
-        <label class="flex items-start gap-2 mt-4 text-sm text-gray-700">
-          <input type="checkbox" v-model="form.asistencia_confirmada" class="mt-1" />
-          Confirmo mi asistencia. Entiendo que tengo 1 hora de tolerancia antes de ser sancionado.
-        </label>
-        <div class="flex gap-2 mt-4">
-          <button @click="paso=2" class="flex-1 border border-green-700 text-green-700 py-2 rounded-lg">Atras</button>
-          <button @click="enviar" :disabled="!form.puesto_id || !form.asistencia_confirmada || form.processing" class="flex-1 bg-green-700 text-white py-2 rounded-lg disabled:opacity-50">
-            {{ form.processing ? 'Enviando...' : 'Enviar solicitud' }}
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup>
-import { ref, Computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import MapaPuestos from '../Components/MapaPuestos.vue'
-
-
 
 const props = defineProps({
   puestos: {
@@ -83,7 +156,14 @@ const props = defineProps({
   },
 })
 
+const pasos = ['Datos', 'Emprendimiento', 'Mesa']
 const paso = ref(1)
+
+function clasePaso(numero) {
+  if (numero < paso.value) return 'fz-paso-hecho'
+  if (numero === paso.value) return 'fz-paso-actual'
+  return ''
+}
 
 const form = useForm({
   nombre: '',
@@ -103,12 +183,21 @@ const form = useForm({
   asistencia_confirmada: false,
 })
 
-const categorias = computed(() => usePage().props.categorias)
+const categorias = computed(() => usePage().props.categorias ?? [])
 const esOtro = computed(() =>
   categorias.value.find(c => c.id === form.categoria_id)?.nombre === 'Otro'
 )
 
 function enviar() {
-  form.post('/feriantes')
+  form.post('/feriantes', {
+    // Si el servidor devuelve errores de los pasos anteriores, se vuelve a ese paso
+    onError: (errores) => {
+      if (errores.nombre || errores.apellido || errores.telefono || errores.email || errores.password) {
+        paso.value = 1
+      } else if (errores.categoria_id || errores.rubro_otro) {
+        paso.value = 2
+      }
+    },
+  })
 }
 </script>

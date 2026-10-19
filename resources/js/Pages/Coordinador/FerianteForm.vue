@@ -29,8 +29,8 @@
                 <option :value="null">Sin puesto asignado</option>
                 <option v-for="p in puestosDisponibles" :key="p.id">Puesto N° {{ p.numero }}</option>
             </select>
-            <p v-if="!recibeMesa" class="text-xs text-gray-500 mb-3">Esta categoría no recibe mesa : traiga la suya.<p>
-           
+            <p v-if="!recibeMesa" class="text-xs text-gray-500 mb-3">Esta categoría no recibe mesa : traiga la suya.</p>
+
                 <p v-for="(error, campo) in form.errors" :key="campo" class="text-red-500 text-xs">{{ error }}</p>
 <div class="flex gap-2 mt-4">
 <Link href="/coordinador" class="flex-1 border border-gray-400 text-gray-600 py-2 rounded-lg textcenter">Cancelar</Link>

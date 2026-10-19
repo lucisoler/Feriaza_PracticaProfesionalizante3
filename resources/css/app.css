@@ -1,9 +1,24 @@
 @import 'tailwindcss';
+@import './feriaza.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js/**/*.vue';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Tipografía: Alegreya, de la fundidora argentina Huerta Tipográfica */
+    --font-sans: 'Alegreya Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Alegreya', Georgia, serif;
+
+    /* Paleta "Impenetrable" */
+    --color-quebracho: #6e2a1c;        /* madera del quebracho colorado: acciones principales */
+    --color-quebracho-oscuro: #4e1c12; /* hover de las acciones */
+    --color-monte: #4d5b36;            /* verde seco del monte: mesas libres, pasos hechos */
+    --color-monte-claro: #dce3cc;      /* fondo del mapa de mesas */
+    --color-siesta: #d9a21b;           /* sol de la siesta: foco, guarda, mesa elegida */
+    --color-siesta-claro: #f5e6b8;     /* hover de mesas libres */
+    --color-polvo: #e6e4d6;            /* polvo del camino: fondo de la página */
+    --color-noche: #1e2316;            /* texto */
+    --color-borde: #d6d0bd;            /* bordes y separadores */
+    --color-error: #a3261b;            /* mensajes de error */
 }
