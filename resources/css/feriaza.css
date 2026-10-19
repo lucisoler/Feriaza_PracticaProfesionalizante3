@@ -1,0 +1,346 @@
+/* =====================================================================
+   Feriaza: estilo "Impenetrable"
+   Paleta tomada del monte chaqueño: la madera del quebracho colorado,
+   el verde seco del monte, el sol de la siesta y el polvo del camino.
+   La guarda de rombos evoca los tejidos de chaguar de la región.
+   Los colores se definen en app.css (@theme) y acá se usan como var().
+   ===================================================================== */
+
+@layer base {
+    body {
+        background-color: var(--color-polvo);
+        color: var(--color-noche);
+        font-family: var(--font-sans);
+        font-size: 1.0625rem;
+        line-height: 1.5;
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-siesta);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            transition: none !important;
+        }
+    }
+}
+
+@layer components {
+    /* ---------- Página y tarjeta ---------- */
+
+    .fz-pagina {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem 3rem;
+    }
+
+    .fz-marca {
+        width: 100%;
+        max-width: 34rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fz-marca-nombre {
+        font-family: var(--font-serif);
+        font-weight: 800;
+        font-size: 2.25rem;
+        line-height: 1;
+        color: var(--color-quebracho);
+        letter-spacing: -0.01em;
+    }
+
+    .fz-marca-lugar {
+        margin-top: 0.35rem;
+        font-size: 0.95rem;
+        color: var(--color-monte);
+    }
+
+    .fz-tarjeta {
+        width: 100%;
+        max-width: 34rem;
+        background: #fffdf8;
+        border: 1px solid var(--color-borde);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .fz-tarjeta-cuerpo {
+        padding: 1.75rem 1.5rem 2rem;
+    }
+
+    /* Guarda de rombos: el elemento distintivo de la identidad */
+    .fz-guarda {
+        height: 14px;
+        background:
+            linear-gradient(135deg, var(--color-quebracho) 25%, transparent 25%) -7px 0 / 14px 14px,
+            linear-gradient(225deg, var(--color-quebracho) 25%, transparent 25%) -7px 0 / 14px 14px,
+            linear-gradient(315deg, var(--color-quebracho) 25%, transparent 25%) 0 0 / 14px 14px,
+            linear-gradient(45deg, var(--color-quebracho) 25%, transparent 25%) 0 0 / 14px 14px,
+            var(--color-siesta);
+    }
+
+    /* ---------- Pasos del formulario (es una secuencia real) ---------- */
+
+    .fz-pasos {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .fz-paso {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: #7a7d6c;
+    }
+
+    .fz-paso::before {
+        content: '';
+        height: 4px;
+        border-radius: 2px;
+        background: var(--color-borde);
+    }
+
+    .fz-paso-hecho {
+        color: var(--color-monte);
+    }
+
+    .fz-paso-hecho::before {
+        background: var(--color-monte);
+    }
+
+    .fz-paso-actual {
+        color: var(--color-quebracho);
+        font-weight: 700;
+    }
+
+    .fz-paso-actual::before {
+        background: var(--color-quebracho);
+    }
+
+    /* ---------- Textos ---------- */
+
+    .fz-titulo {
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-size: 1.6rem;
+        line-height: 1.2;
+        margin-bottom: 0.4rem;
+    }
+
+    .fz-ayuda {
+        font-size: 0.92rem;
+        color: #5c604f;
+        margin-bottom: 1.25rem;
+    }
+
+    .fz-separador {
+        border: 0;
+        border-top: 1px dashed var(--color-borde);
+        margin: 1.5rem 0 1.25rem;
+    }
+
+    /* ---------- Campos ---------- */
+
+    .fz-campo {
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .fz-etiqueta {
+        display: block;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .fz-opcional {
+        font-weight: 400;
+        color: #7a7d6c;
+    }
+
+    .fz-input {
+        width: 100%;
+        background: #fff;
+        border: 1.5px solid var(--color-borde);
+        border-radius: 4px;
+        padding: 0.6rem 0.75rem;
+        font: inherit;
+        color: inherit;
+    }
+
+    .fz-input:hover {
+        border-color: #b3ab95;
+    }
+
+    .fz-input:focus {
+        outline: none;
+        border-color: var(--color-quebracho);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-siesta) 45%, transparent);
+    }
+
+    .fz-input-error {
+        border-color: var(--color-error);
+    }
+
+    .fz-error {
+        display: block;
+        margin-top: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--color-error);
+    }
+
+    .fz-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        margin-top: 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .fz-check input {
+        margin-top: 0.3rem;
+        width: 1.1rem;
+        height: 1.1rem;
+        accent-color: var(--color-quebracho);
+    }
+
+    /* ---------- Botones ---------- */
+
+    .fz-acciones {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .fz-boton,
+    .fz-boton-secundario {
+        flex: 1;
+        padding: 0.7rem 1rem;
+        border-radius: 4px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.15s;
+    }
+
+    .fz-boton {
+        background: var(--color-quebracho);
+        color: #fff;
+        border: 2px solid var(--color-quebracho);
+    }
+
+    .fz-boton:hover:not(:disabled) {
+        background: var(--color-quebracho-oscuro);
+        border-color: var(--color-quebracho-oscuro);
+    }
+
+    .fz-boton:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .fz-boton-secundario {
+        background: transparent;
+        color: var(--color-monte);
+        border: 2px solid var(--color-monte);
+    }
+
+    .fz-boton-secundario:hover {
+        background: var(--color-monte-claro);
+    }
+
+    /* ---------- Mapa de mesas ---------- */
+
+    .fz-leyenda {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .fz-leyenda span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .fz-leyenda i {
+        width: 1rem;
+        height: 1rem;
+        border-width: 2px;
+        border-style: solid;
+        border-radius: 2px;
+        display: inline-block;
+    }
+
+    .fz-mapa {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.45rem;
+        padding: 0.75rem;
+        background: var(--color-monte-claro);
+        border-radius: 4px;
+    }
+
+    .fz-mesa {
+        aspect-ratio: 4 / 3;
+        border-radius: 3px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: background-color 0.15s;
+    }
+
+    .fz-mesa-libre {
+        background: #fffdf8;
+        color: var(--color-monte);
+        border-color: var(--color-monte);
+    }
+
+    .fz-mesa-libre:hover {
+        background: var(--color-siesta-claro);
+    }
+
+    .fz-mesa-elegida {
+        background: var(--color-quebracho);
+        color: #fff;
+        border-color: var(--color-siesta);
+        box-shadow: 0 0 0 2px var(--color-siesta);
+    }
+
+    .fz-mesa-ocupada {
+        background: repeating-linear-gradient(
+            45deg,
+            #cfcab9 0 4px,
+            #ddd8c8 4px 8px
+        );
+        color: #8a8676;
+        text-decoration: line-through;
+        cursor: not-allowed;
+    }
+
+    .fz-confirmacion {
+        margin-top: 0.9rem;
+        font-weight: 700;
+        color: var(--color-quebracho);
+    }
+
+    @media (min-width: 40rem) {
+        .fz-mapa {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .fz-tarjeta-cuerpo {
+            padding: 2rem 2.25rem 2.25rem;
+        }
+    }
+}
