@@ -8,40 +8,31 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
     /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
-     * @return array<string, mixed>
+     * Datos que reciben todas las páginas en $page.props.
      */
     public function share(Request $request): array
     {
         return [
             ...parent::share($request),
-            //
-            'categorias'=>fn()=>Categoria::orderBy('prioridad')
-            ->orderBy('nombre')
-            ->get(['id','nombre','recibe_mesa']),
+
+            // Mensajes que mandan los controladores con ->with(...)
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'whatsapp' => fn () => $request->session()->get('whatsapp'),
+            ],
+
+            // Lista de categorías para los selectores de los formularios
+            'categorias' => fn () => Categoria::orderBy('prioridad')
+                ->orderBy('nombre')
+                ->get(['id', 'nombre', 'recibe_mesa']),
         ];
     }
 }

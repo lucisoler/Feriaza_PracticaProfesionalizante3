@@ -17,18 +17,21 @@ class FerianteController extends Controller
 
     public function store(Request $request)
     {
-        $data= $request->validate([
-            'nombre'=>'required|string|max:100',
-            'apellido'=>'required|string|max:100',
-            'nombre_emprendimiento'=>'nullable|sring|max:150',
-            'consulta_id'=>'required|exists:categorias,id',
-            'rubro_otro'=>'nullable|required_if:categoria_id' .Categoria::idOtro() . '|string|max:100',
-            'telefono'=>'required|string|max:20',
-            'instagram'=>'nullable|string|',
-            'facebook'=>'nullable|string|',
-            'tik tok'=>'nullable|string|',
-            'consulta'=>'nullable|string',
-            'puesto_id'=>'required|exists:puestos,id',
+                $data = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'email' => 'required|email|unique:feriantes,email',
+            'password' => 'required|string|min:8|confirmed',
+            'nombre_emprendimiento' => 'nullable|string|max:150',
+            'categoria_id' => 'required|exists:categorias,id',
+            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
+            'telefono' => 'required|string|max:20',
+            'instagram' => 'nullable|string|max:100',
+            'facebook' => 'nullable|string|max:100',
+            'tiktok' => 'nullable|string|max:100',
+            'consulta' => 'nullable|string',
+            'asistencia_confirmada' => 'required|accepted',
+            'puesto_id' => 'required|exists:puestos,id',
         ]);
 
 
@@ -55,7 +58,7 @@ class FerianteController extends Controller
     . "Tel:{$feriante->telefono}"
     );
 
-    $link= "Https:/wa.me/{$numero}?text={$msg}";
+    $link= "https:/wa.me/{$numero}?text={$msg}";
 
 
     return Inertia::location('/gracias');
