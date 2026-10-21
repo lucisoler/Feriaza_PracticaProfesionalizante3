@@ -12,7 +12,7 @@ class FerianteAuthController extends Controller
 {
     public function showlogin(): Response
     {
-           return Inertia::reader('Feriante/Login');
+           return Inertia::render('Feriante/Login');
     }
 
     public function login(Request $request):RedirectResponse
