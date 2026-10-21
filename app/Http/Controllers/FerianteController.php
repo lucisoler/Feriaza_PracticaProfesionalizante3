@@ -2,22 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\PuestoController;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use App\Models\Puesto;
-use App\Models\Feriante;
 use App\Models\Categoria;
+use App\Models\Feriante;
+use App\Models\Puesto;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class FerianteController extends Controller
 {
-
-
-    public function store(Request $request)
+    // CREATE público: formulario de inscripción en 3 pasos (POST /feriantes)
+    public function store(Request $request): RedirectResponse
     {
-                $data = $request->validate([
+        // Solo las categorías que reciben mesa tienen que elegir puesto (RN-03)
+        $categoria = Categoria::find($request->input('categoria_id'));
+        $recibeMesa = $categoria?->recibe_mesa ?? true;
+
+        $data = $request->validate([
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
             'email' => 'required|email|unique:feriantes,email',
@@ -31,41 +35,58 @@ class FerianteController extends Controller
             'tiktok' => 'nullable|string|max:100',
             'consulta' => 'nullable|string',
             'asistencia_confirmada' => 'required|accepted',
-            'puesto_id' => 'required|exists:puestos,id',
+            'puesto_id' => [
+                Rule::requiredIf($recibeMesa),
+                'nullable',
+                'exists:puestos,id',
+            ],
+        ], [
+            'puesto_id.required' => 'Elegí una mesa del plano.',
         ]);
 
+        // Los revendedores no reciben mesa: aunque llegue un puesto, se ignora
+        $puestoId = $recibeMesa ? $data['puesto_id'] : null;
+        unset($data['puesto_id']);
 
+        // Todo o nada: si algo falla, no queda el feriante guardado sin su mesa
+        [$feriante, $puesto] = DB::transaction(function () use ($data, $puestoId) {
+            $puesto = null;
 
-        $puesto = Puesto::findOrFail($data['puesto_id']);
+            if ($puestoId) {
+                // lockForUpdate evita que dos personas reserven la misma mesa a la vez (RN-09)
+                $puesto = Puesto::lockForUpdate()->findOrFail($puestoId);
 
-        if($puesto->estado === 'reservado'){
-    return back()->withErrors(['puesto_id'=>'Ese puesto ya fué reservado.Elegí Otro']);
+                if ($puesto->estado === 'reservado') {
+                    throw ValidationException::withMessages([
+                        'puesto_id' => 'Esa mesa ya fue reservada. Elegí otra.',
+                    ]);
+                }
+            }
+
+            $feriante = Feriante::create($data);
+
+            $puesto?->update([
+                'estado' => 'reservado',
+                'feriante_id' => $feriante->id,
+            ]);
+
+            return [$feriante, $puesto];
+        });
+
+        // Queda con la sesión iniciada para entrar directo a "Mi cuenta"
+        Auth::guard('feriante')->login($feriante);
+
+        $numero = env('WHATSAPP_COORDINADOR');
+        $mesa = $puesto ? "Mesa N° {$puesto->numero}" : 'Sin mesa (trae la suya)';
+        $msg = urlencode(
+            "Nuevo feriante:\n"
+            . "{$feriante->nombre} {$feriante->apellido}\n"
+            . "Categoría: {$feriante->categoria->nombre}\n"
+            . "{$mesa}\n"
+            . "Tel: {$feriante->telefono}"
+        );
+        $link = "https://wa.me/{$numero}?text={$msg}";
+
+        return redirect('/gracias')->with('whatsapp', $link);
     }
-
-    unset($data['puesto_id']);
-      $feriante=Feriante::create($data);
-
- $puesto->update(['estado' =>'reservado','feriante_id'=>$feriante->id]);
-
- Auth::guard('feriante')->login($feriante);
-
- $numero = env('WHATSAPP_COORDINADOR');
- $msg=urlencode(
-    "nuevo feriante:\n"
-    . "{$feriante->nombre} {$feriante->apellido}\n"
-    . "Categoría:{$feriante->categoria->nombre}\n"
-    . "puesto N:{$puesto->numero}\n"
-    . "Tel:{$feriante->telefono}"
-    );
-
-    $link= "https:/wa.me/{$numero}?text={$msg}";
-
-
-    return Inertia::location('/gracias');
-
-    }
-
-
-
-
 }
