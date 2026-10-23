@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class Feriante extends Authenticatable
 {
     use HasApiTokens,Notifiable;
@@ -42,4 +42,23 @@ class Feriante extends Authenticatable
     {
         return $this->hasOne(Puesto::class);
     }
+
+    // Participaciones en eventos (D-07)
+    public function inscripciones(): HasMany
+    {
+        return $this->hasMany(Inscripcion::class);
+    }
+
+    // Consultas enviadas al coordinador (RF-17)
+    public function consultas(): HasMany
+    {
+        return $this->hasMany(Consulta::class);
+    }
+
+
+
+
+
+
+
 }
