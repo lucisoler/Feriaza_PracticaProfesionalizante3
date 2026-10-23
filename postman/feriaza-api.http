@@ -1,0 +1,129 @@
+### =====================================================================
+### Feriaza API v1: pruebas manuales con la extensión REST Client de VS Code
+### Hacé clic en "Send Request" arriba de cada pedido, en orden.
+### Los tokens del login se guardan solos y los usan los pedidos siguientes.
+### =====================================================================
+
+@base = http://127.0.0.1:8000/api/v1
+@emailNuevo = api5@feriaza.test
+
+### 1. Listar categorías (público) → 200
+GET {{base}}/categorias
+Accept: application/json
+
+### 2. Registro de feriante → 201 con token (cambiá @emailNuevo para repetirlo)
+POST {{base}}/feriantes/registro
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "apellido": "Prueba",
+  "email": "{{emailNuevo}}",
+  "password": "Prueba123",
+  "password_confirmation": "Prueba123",
+  "telefono": "3644000001",
+  "categoria_id": 1
+}
+
+### 3. Registro con el mismo email → 422
+POST {{base}}/feriantes/registro
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "apellido": "Prueba",
+  "email": "{{emailNuevo}}",
+  "password": "Prueba123",
+  "password_confirmation": "Prueba123",
+  "telefono": "3644000001",
+  "categoria_id": 1
+}
+
+### 4. Registro con contraseña corta → 422
+POST {{base}}/feriantes/registro
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "apellido": "Prueba",
+  "email": "corta@feriaza.test",
+  "password": "123",
+  "password_confirmation": "123",
+  "telefono": "3644000001",
+  "categoria_id": 1
+}
+
+### 5. Login feriante → 200 con token
+# @name loginFeriante
+POST {{base}}/feriantes/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "feriante@feriaza.test",
+  "password": "Feriante123"
+}
+
+### 6. Login con contraseña incorrecta → 422
+POST {{base}}/feriantes/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "feriante@feriaza.test",
+  "password": "incorrecta"
+}
+
+### 7. Login coordinador → 200 con token
+# @name loginCoordinador
+POST {{base}}/coordinador/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "coordinador@feriaza.test",
+  "password": "Coordinador123"
+}
+
+### 8. Ver mi cuenta (token de feriante) → 200
+GET {{base}}/mi-cuenta
+Accept: application/json
+Authorization: Bearer {{loginFeriante.response.body.token}}
+
+### 9. Modificar mi cuenta → 200
+PATCH {{base}}/mi-cuenta
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{loginFeriante.response.body.token}}
+
+{
+  "telefono": "3644999999",
+  "instagram": "@feriaza"
+}
+
+### 10. Mi cuenta sin token → 401
+GET {{base}}/mi-cuenta
+Accept: application/json
+
+### 11. Mi cuenta con token de coordinador → 403
+GET {{base}}/mi-cuenta
+Accept: application/json
+Authorization: Bearer {{loginCoordinador.response.body.token}}
+
+### 12. Logout feriante → 200
+POST {{base}}/logout
+Accept: application/json
+Authorization: Bearer {{loginFeriante.response.body.token}}
+
+### 13. Token ya revocado → 401
+GET {{base}}/mi-cuenta
+Accept: application/json
+Authorization: Bearer {{loginFeriante.response.body.token}}
+
+### 14. Logout coordinador → 200
+POST {{base}}/logout
+Accept: application/json
+Authorization: Bearer {{loginCoordinador.response.body.token}}
