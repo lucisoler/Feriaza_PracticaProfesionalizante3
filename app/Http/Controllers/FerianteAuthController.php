@@ -10,9 +10,9 @@ use Inertia\Response;
 
 class FerianteAuthController extends Controller
 {
-    public function showlogin(): Response
+    public function showLogin(): Response
     {
-           return Inertia::reader('Feriante/Login');
+           return Inertia::render('Feriante/Login');
     }
 
     public function login(Request $request):RedirectResponse
