@@ -10,7 +10,7 @@ use Inertia\Response;
 
 class FerianteAuthController extends Controller
 {
-    public function showlogin(): Response
+    public function showLogin(): Response
     {
            return Inertia::render('Feriante/Login');
     }
