@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\Coordinador\FerianteController as CoordinadorFerianteController;
 use App\Http\Controllers\Api\MiCuentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,4 +33,16 @@ Route::prefix('v1')->group(function () {
         Route::patch('/mi-cuenta', [MiCuentaController::class, 'update']);
         Route::delete('/mi-cuenta', [MiCuentaController::class, 'destroy']);
     });
+
+    // === Coordinador: token con habilidad 'coordinador' ===
+    Route::middleware(['auth:sanctum', 'abilities:coordinador'])
+        ->prefix('coordinador')
+        ->group(function () {
+            Route::get('/feriantes', [CoordinadorFerianteController::class, 'index']);
+            Route::post('/feriantes', [CoordinadorFerianteController::class, 'store']);
+            Route::get('/feriantes/{feriante}', [CoordinadorFerianteController::class, 'show']);
+            Route::patch('/feriantes/{feriante}', [CoordinadorFerianteController::class, 'update']);
+            Route::delete('/feriantes/{feriante}', [CoordinadorFerianteController::class, 'destroy']);
+            Route::get('/feriantes/{feriante}/historial', [CoordinadorFerianteController::class, 'historial']);
+        });
 });
