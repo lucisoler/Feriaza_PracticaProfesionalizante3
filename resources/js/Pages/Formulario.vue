@@ -20,6 +20,10 @@
         <div v-if="paso === 1">
           <h1 class="fz-titulo">Tus datos</h1>
           <p class="fz-ayuda">Los usamos para avisarte cuando aprueben tu inscripción.</p>
+          <p class="fz-aviso">
+            ¿Ya te inscribiste antes?
+            <Link href="/mi-cuenta/login" style="color: var(--color-quebracho); font-weight: 700">Iniciá sesión en Mi cuenta</Link>
+          </p>
 
           <label class="fz-campo">
             <span class="fz-etiqueta">Nombre</span>
@@ -154,7 +158,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useForm, usePage } from '@inertiajs/vue3'
+import { Link, useForm, usePage } from '@inertiajs/vue3'
 import MapaPuestos from '../Components/MapaPuestos.vue'
 
 const props = defineProps({
