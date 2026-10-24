@@ -1,0 +1,265 @@
+/* =====================================================================
+   Feriaza: piezas compartidas de Mi cuenta y del panel del coordinador.
+   Usa los mismos colores de app.css (@theme) que feriaza.css.
+   ===================================================================== */
+
+@layer components {
+    /* ---------- Mensajes y datos ---------- */
+
+    .fz-aviso {
+        border-left: 4px solid var(--color-monte);
+        background: var(--color-monte-claro);
+        color: var(--color-noche);
+        padding: 0.65rem 0.9rem;
+        border-radius: 3px;
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .fz-resumen {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.35rem 1rem;
+        padding: 0.9rem 1rem;
+        background: var(--color-polvo);
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .fz-resumen dt {
+        color: #5c604f;
+    }
+
+    .fz-resumen dd {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .fz-subtitulo {
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0.25rem 0 0.9rem;
+    }
+
+    /* ---------- Estado de un feriante ---------- */
+
+    .fz-estado {
+        display: inline-block;
+        padding: 0.1rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1.5px solid currentColor;
+    }
+
+    .fz-estado-pendiente {
+        color: #8a5a00;
+        background: var(--color-siesta-claro);
+    }
+
+    .fz-estado-aprobado {
+        color: var(--color-monte);
+        background: var(--color-monte-claro);
+    }
+
+    .fz-estado-rechazado {
+        color: var(--color-error);
+        background: #f6dcd8;
+    }
+
+    /* ---------- Botones extra ---------- */
+
+    .fz-boton-peligro {
+        flex: 1;
+        padding: 0.7rem 1rem;
+        border-radius: 4px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: var(--color-error);
+        border: 2px solid var(--color-error);
+    }
+
+    .fz-boton-peligro:hover {
+        background: #f6dcd8;
+    }
+
+    .fz-enlace {
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--color-monte);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+    }
+
+    .fz-cabecera-tarjeta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* ---------- Panel del coordinador ---------- */
+
+    .fz-panel {
+        width: 100%;
+        max-width: 72rem;
+    }
+
+    /* En el panel la tarjeta usa todo el ancho para que entre la tabla */
+    .fz-panel .fz-tarjeta {
+        max-width: none;
+    }
+
+    .fz-panel-cabecera {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fz-panel-acciones {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .fz-boton-chico {
+        display: inline-block;
+        padding: 0.5rem 0.9rem;
+        border-radius: 4px;
+        font-weight: 700;
+        background: var(--color-quebracho);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .fz-boton-chico:hover {
+        background: var(--color-quebracho-oscuro);
+    }
+
+    .fz-buscador {
+        max-width: 22rem;
+        margin-bottom: 1rem;
+    }
+
+    .fz-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .fz-tabla th {
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #5c604f;
+        padding: 0.6rem 0.75rem;
+        border-bottom: 2px solid var(--color-quebracho);
+    }
+
+    .fz-tabla td {
+        padding: 0.65rem 0.75rem;
+        border-bottom: 1px solid var(--color-borde);
+        vertical-align: middle;
+    }
+
+    .fz-tabla tbody tr:hover {
+        background: #fbf7ea;
+    }
+
+    .fz-tabla-vacia {
+        text-align: center;
+        color: #5c604f;
+        padding: 2rem 0.75rem !important;
+    }
+
+    .fz-secundario {
+        color: #5c604f;
+        font-size: 0.85rem;
+    }
+
+    .fz-acciones-fila {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .fz-accion {
+        padding: 0.3rem 0.6rem;
+        border-radius: 3px;
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1.5px solid currentColor;
+        background: transparent;
+        text-decoration: none;
+        line-height: 1.2;
+    }
+
+    .fz-accion-aprobar { color: var(--color-monte); }
+    .fz-accion-aprobar:hover { background: var(--color-monte-claro); }
+    .fz-accion-rechazar { color: #8a5a00; }
+    .fz-accion-rechazar:hover { background: var(--color-siesta-claro); }
+    .fz-accion-editar { color: var(--color-noche); }
+    .fz-accion-editar:hover { background: var(--color-polvo); }
+    .fz-accion-eliminar { color: var(--color-error); }
+    .fz-accion-eliminar:hover { background: #f6dcd8; }
+
+    .fz-accion:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    /* En el celular, cada fila de la tabla se muestra como una ficha */
+    @media (max-width: 47.99rem) {
+        .fz-tabla thead {
+            display: none;
+        }
+
+        .fz-tabla tr {
+            display: block;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-borde);
+        }
+
+        .fz-tabla td {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 0;
+            padding: 0.2rem 0.25rem;
+        }
+
+        .fz-tabla td::before {
+            content: attr(data-etiqueta);
+            color: #5c604f;
+            font-size: 0.85rem;
+        }
+
+        .fz-tabla td.fz-celda-nombre {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .fz-tabla td.fz-celda-nombre::before,
+        .fz-tabla td.fz-celda-acciones::before {
+            content: none;
+        }
+
+        .fz-tabla td.fz-celda-acciones {
+            padding-top: 0.5rem;
+        }
+    }
+}

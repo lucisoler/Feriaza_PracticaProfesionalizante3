@@ -1,68 +1,121 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-4">
-    <div class="bg-white rounded-2xl shadow-md p-6 w-full max-w-lg mx-auto">
+  <main class="fz-pagina">
+    <header class="fz-marca">
+      <p class="fz-marca-nombre">Feriaza</p>
+      <p class="fz-marca-lugar">Feria de la Plaza San Martín, Juan José Castelli, portal del Impenetrable</p>
+    </header>
 
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-xl font-bold text-green-700">Mi cuenta</h1>
-        <button @click="cerrarSesion" class="text-sm text-gray-500 underline">Cerrar sesión</button>
+    <section class="fz-tarjeta">
+      <div class="fz-guarda"></div>
+
+      <div class="fz-tarjeta-cuerpo">
+        <div class="fz-cabecera-tarjeta">
+          <h1 class="fz-titulo">Hola, {{ feriante.nombre }}</h1>
+          <button type="button" class="fz-enlace" @click="cerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
+
+        <!-- Resumen de la inscripción -->
+        <dl class="fz-resumen">
+          <dt>Estado</dt>
+          <dd><span class="fz-estado" :class="`fz-estado-${feriante.estado}`">{{ feriante.estado }}</span></dd>
+          <dt>Categoría</dt>
+          <dd>{{ feriante.categoria?.nombre ?? 'Sin categoría' }}</dd>
+          <dt>Mesa</dt>
+          <dd>{{ feriante.puesto?.numero ? `N° ${feriante.puesto.numero}` : (feriante.categoria?.recibe_mesa === false ? 'Traés la tuya' : 'Sin asignar') }}</dd>
+        </dl>
+
+        <h2 class="fz-subtitulo">Mis datos</h2>
+
+        <form @submit.prevent="guardar">
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Nombre</span>
+            <input v-model="form.nombre" class="fz-input" :class="{ 'fz-input-error': form.errors.nombre }" autocomplete="given-name" />
+            <span v-if="form.errors.nombre" class="fz-error">{{ form.errors.nombre }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Apellido</span>
+            <input v-model="form.apellido" class="fz-input" :class="{ 'fz-input-error': form.errors.apellido }" autocomplete="family-name" />
+            <span v-if="form.errors.apellido" class="fz-error">{{ form.errors.apellido }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Teléfono</span>
+            <input v-model="form.telefono" type="tel" class="fz-input" :class="{ 'fz-input-error': form.errors.telefono }" autocomplete="tel" />
+            <span v-if="form.errors.telefono" class="fz-error">{{ form.errors.telefono }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Nombre del emprendimiento <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.nombre_emprendimiento" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Categoría</span>
+            <select v-model="form.categoria_id" class="fz-input" :class="{ 'fz-input-error': form.errors.categoria_id }">
+              <option :value="null">Elegí una categoría</option>
+              <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+            </select>
+            <span v-if="form.errors.categoria_id" class="fz-error">{{ form.errors.categoria_id }}</span>
+          </label>
+
+          <label v-if="esOtro" class="fz-campo">
+            <span class="fz-etiqueta">¿Qué vendés?</span>
+            <input v-model="form.rubro_otro" class="fz-input" :class="{ 'fz-input-error': form.errors.rubro_otro }" />
+            <span v-if="form.errors.rubro_otro" class="fz-error">{{ form.errors.rubro_otro }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Instagram <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.instagram" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Facebook <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.facebook" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">TikTok <span class="fz-opcional">(opcional)</span></span>
+            <input v-model="form.tiktok" class="fz-input" />
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Consulta para el coordinador <span class="fz-opcional">(opcional)</span></span>
+            <textarea v-model="form.consulta" class="fz-input" rows="3"></textarea>
+          </label>
+
+          <hr class="fz-separador" />
+          <p class="fz-ayuda">Completá estos dos campos solo si querés cambiar tu contraseña.</p>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Nueva contraseña <span class="fz-opcional">(mínimo 8 caracteres)</span></span>
+            <input v-model="form.password" type="password" class="fz-input" :class="{ 'fz-input-error': form.errors.password }" autocomplete="new-password" />
+            <span v-if="form.errors.password" class="fz-error">{{ form.errors.password }}</span>
+          </label>
+
+          <label class="fz-campo">
+            <span class="fz-etiqueta">Repetí la nueva contraseña</span>
+            <input v-model="form.password_confirmation" type="password" class="fz-input" autocomplete="new-password" />
+          </label>
+
+          <div class="fz-acciones">
+            <button type="submit" class="fz-boton" :disabled="form.processing">
+              {{ form.processing ? 'Guardando…' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+
+        <hr class="fz-separador" />
+        <p class="fz-ayuda">Si no vas a participar más, podés darte de baja. Se libera tu mesa y se borran tus datos.</p>
+        <div class="fz-acciones">
+          <button type="button" class="fz-boton-peligro" @click="cancelarInscripcion">Cancelar mi inscripción</button>
+        </div>
       </div>
-
-      
-      <p v-if="$page.props.flash?.success" class="bg-green-50 text-green-700 text-sm rounded-lg p-2 mb-4">
-        {{ $page.props.flash.success }}
-      </p>
-
-      
-      <div class="text-sm mb-4 space-y-1">
-        <p>Categoría: <strong>{{ feriante.categoria?.nombre ?? 'sin categoría' }}</strong></p>
-        <p>Puesto asignado: <strong>{{ feriante.puesto?.numero ?? 'sin asignar' }}</strong></p>
-        <p>
-          Estado:
-          <span :class="{
-            'text-yellow-600': feriante.estado === 'pendiente',
-            'text-green-700': feriante.estado === 'aprobado',
-            'text-red-500': feriante.estado === 'rechazado',
-          }">{{ feriante.estado }}</span>
-        </p>
-      </div>
-
-      <h2 class="font-bold mb-3">Mis datos</h2>
-
-      <input v-model="form.nombre" placeholder="Nombre *" class="w-full border rounded-lg p-2 mb-3" />
-      <input v-model="form.apellido" placeholder="Apellido *" class="w-full border rounded-lg p-2 mb-3" />
-      <input v-model="form.telefono" placeholder="Teléfono *" class="w-full border rounded-lg p-2 mb-3" />
-      <input v-model="form.nombre_emprendimiento" placeholder="Nombre del emprendimiento (opcional)" class="w-full border rounded-lg p-2 mb-3" />
-
-      
-      <select v-model="form.categoria_id" class="w-full border rounded-lg p-2 mb-3">
-        <option :value="null">-- Elegí tu categoría --</option>
-        <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-      </select>
-      <input v-if="esOtro" v-model="form.rubro_otro" placeholder="Especificá tu rubro *" class="w-full border rounded-lg p-2 mb-3" />
-
-      <input v-model="form.instagram" placeholder="Instagram (opcional)" class="w-full border rounded-lg p-2 mb-2" />
-      <input v-model="form.facebook" placeholder="Facebook (opcional)" class="w-full border rounded-lg p-2 mb-2" />
-      <input v-model="form.tiktok" placeholder="TikTok (opcional)" class="w-full border rounded-lg p-2 mb-3" />
-      <textarea v-model="form.consulta" placeholder="Consulta (opcional)" class="w-full border rounded-lg p-2 mb-3 h-20"></textarea>
-
-      <hr class="my-4" />
-      <p class="text-xs text-gray-500 mb-2">Dejá estos campos vacíos si no querés cambiar tu contraseña.</p>
-      <input v-model="form.password" type="password" placeholder="Nueva contraseña" class="w-full border rounded-lg p-2 mb-3" />
-      <input v-model="form.password_confirmation" type="password" placeholder="Repetir nueva contraseña" class="w-full border rounded-lg p-2 mb-3" />
-
-      
-      <p v-for="(error, campo) in form.errors" :key="campo" class="text-red-500 text-xs mb-1">{{ error }}</p>
-
-      <button @click="guardar" :disabled="form.processing"
-        class="w-full bg-green-700 text-white py-2 rounded-lg mt-2 mb-3 disabled:opacity-50">
-        {{ form.processing ? 'Guardando...' : 'Guardar cambios' }}
-      </button>
-
-      <button @click="cancelarInscripcion" class="w-full border border-red-500 text-red-500 py-2 rounded-lg">
-        Cancelar mi inscripción
-      </button>
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup>
@@ -98,8 +151,7 @@ const esOtro = computed(() =>
 
 function guardar() {
   form.patch('/mi-cuenta', {
-    preserveScroll: true,
-    
+    // Después de guardar, se vacían los campos de contraseña
     onSuccess: () => form.reset('password', 'password_confirmation'),
   })
 }

@@ -93,7 +93,7 @@ public function cambiarEstado(Request $request,int $id):RedirectResponse
 {
 
 $data=$request->validate([
-    'estado'=>'required|in:pendiente,aprovado,rechazado',
+    'estado'=>'required|in:pendiente,aprobado,rechazado',
 ]);
 
 Feriante::findOrFail($id)->update($data);
@@ -142,7 +142,7 @@ return $request->validate([
 'facebook'=>'nullable|string|max:100',
 'tiktok'=>'nullable|string|max100',
 'consulta'=>'nullable|string',
-'estado'=>'nullable|in:pendiente,aprovado,rechazado',
+'estado'=>'nullable|in:pendiente,aprobado,rechazado',
 'asistencia_confirmada'=>'nullable|boolean',
 'puesto_id'=>'nullable|exists:puestos,id,'
 
