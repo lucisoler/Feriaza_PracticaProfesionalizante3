@@ -38,24 +38,25 @@ class MiCuentaController extends Controller
         $data =$request->validate([
          'nombre'=>'required|string|max:100',
             'apellido'=>'required|string|max:100',
-            'nombre_emprendimiento'=>'nullable|sring|max:150',
+            'nombre_emprendimiento'=>'nullable|string|max:150',
             'categoria_id' => 'required|exists:categorias,id',
             'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
             'telefono'=>'required|string|max:20',
             'instagram'=>'nullable|string|',
             'facebook'=>'nullable|string|',
-            'tik tok'=>'nullable|string|',
-            'consulta'=>'nullable|string',
-            'puesto_id'=>'required|exists:puestos,id',
+            'tiktok'=>'nullable|string|',
+            'consulta'=>'nullable|string|',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        if (empty($data['pasword'])){
-            unset($data['pasword']);
+        if (empty($data['password'])){
+            unset($data['password']);
         }
 
-        $feriante->update($data);
+                $feriante->update($data);
 
-        return back()->with('sucess','tus datos fueron actualizados.');
+        return back()->with('success', 'Tus datos fueron actualizados.');
+
     }
 
     public function destroy(Request $request):RedirectResponse

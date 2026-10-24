@@ -1,80 +1,117 @@
 <template>
-<div class ="p-6">
- <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-green-700">Panel de Coordinador</h1>
-    <div class="flex gap-3 items-center">
-        <Link href="/coordinador/feriantes/crear" class="bg-green-700 text-while text-sm px-3 py-2 rouned-lg">
-        + Nuevo feriante
-    </Link>
-    <button @click="router.post('/logout')" class="text-sm text-gray-500 underline">Cerrar Sessión></button>
-</div>
-</div>
+  <main class="fz-pagina">
+    <div class="fz-panel">
+      <header class="fz-panel-cabecera">
+        <div>
+          <p class="fz-marca-nombre">Feriaza</p>
+          <p class="fz-marca-lugar">Panel del coordinador</p>
+        </div>
+        <div class="fz-panel-acciones">
+          <Link href="/coordinador/feriantes/crear" class="fz-boton-chico">Cargar feriante</Link>
+          <button type="button" class="fz-enlace" @click="router.post('/logout')">Cerrar sesión</button>
+        </div>
+      </header>
 
-<p v-if="$page.props.flash?.success" class="bg-green-50 text-green-700 text-sm rouned-lg p-2 mb-4">
-    {{$page.props.flash.success}}
-</p>
+      <section class="fz-tarjeta">
+        <div class="fz-guarda"></div>
 
+        <div class="fz-tarjeta-cuerpo">
+          <div class="fz-cabecera-tarjeta">
+            <h1 class="fz-titulo">Feriantes</h1>
+            <p class="fz-secundario">
+              {{ cantidad('pendiente') }} pendientes, {{ cantidad('aprobado') }} aprobados y {{ cantidad('rechazado') }} rechazados
+            </p>
+          </div>
 
-<table class="w-full text-sm border-collapse">
-    <thead>
-        <tr class="bg-green-700 text-while">
-            <th class="p-2 text-left">Nombre</th>
-            <th class="p-2">Categoría</th>
-            <th class="p-2">Puesto</th>
-            <th class="p-2">Teléfono</th>
-            <th class="p-2">Estado</th>
-            <th class="p-2">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr v-for="f in feriantes" :key="f.id" class="border-b hover:bg-gray-50">
-            <td class ="p-2">{{f.nombre}} {{f.apellido}}</td>
-            <td class ="p-2 text-center">
-                {{f.categoria?.nombre}}
-                <span v-if="f.rubro_otro" class="text-gray-500">({{f.rubro_otro}})</span>
-            </td>
-            <td class="p-2 text-center">{{f.puesto?.numero ?? '-'}}</td>
-            <td class="p-2 text-center">{{f.telefono}}</td>
-            <td class="p-2 text-center">
-                <span :class="{
-                    'text-yellow-600':f.estado ==='pendiente',
-                    'text-green-700' :f.estado ==='aprobado',
-                    'text-red-500'   :f.estado ==='rechazado',
-                }">{{f.estado}}</span>
+          <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
+
+          <label class="fz-campo fz-buscador">
+            <span class="fz-etiqueta">Buscar</span>
+            <input v-model="busqueda" type="search" class="fz-input" placeholder="Nombre, categoría o teléfono" />
+          </label>
+
+          <table class="fz-tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Mesa</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="f in filtrados" :key="f.id">
+                <td class="fz-celda-nombre" data-etiqueta="Nombre">{{ f.nombre }} {{ f.apellido }}</td>
+                <td data-etiqueta="Categoría">
+                  <span>
+                    {{ f.categoria?.nombre }}
+                    <span v-if="f.rubro_otro" class="fz-secundario">({{ f.rubro_otro }})</span>
+                  </span>
                 </td>
-                <td class="p-2 text-center">
-                    <div class="flex gap-1 justify-center flex-wrap">
-                        <button @click="cambiarEstado(f.id,'aprobado')" class="bg-green-600 text-while px-2 py-1 rouned text-xs">Aprobar</button>
-                        <button @click="cambiarEstado(f.id,'rechazado')" class="bg-red-500 text-while px-2 py-1 rouned text-xs">Rechazar</button>
-                        <Link :href="`/coordinador/feriantes/${f.id}/editar`" class="bg-blue-500 text-while px-2 py-1 rouned text-xs">Editar</Link>
-                        <button @click="eliminar(f.id)" class="bg-gray-700 text-while px-2 py-1 rouned text-xs">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
+                <td data-etiqueta="Mesa">{{ f.puesto?.numero ?? '-' }}</td>
+                <td data-etiqueta="Teléfono">{{ f.telefono }}</td>
+                <td data-etiqueta="Estado">
+                  <span class="fz-estado" :class="`fz-estado-${f.estado}`">{{ f.estado }}</span>
+                </td>
+                <td class="fz-celda-acciones">
+                  <div class="fz-acciones-fila">
+                    <button type="button" class="fz-accion fz-accion-aprobar" :disabled="f.estado === 'aprobado'" @click="cambiarEstado(f.id, 'aprobado')">Aprobar</button>
+                    <button type="button" class="fz-accion fz-accion-rechazar" :disabled="f.estado === 'rechazado'" @click="cambiarEstado(f.id, 'rechazado')">Rechazar</button>
+                    <Link :href="`/coordinador/feriantes/${f.id}/editar`" class="fz-accion fz-accion-editar">Editar</Link>
+                    <button type="button" class="fz-accion fz-accion-eliminar" @click="eliminar(f)">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="filtrados.length === 0">
+                <td colspan="6" class="fz-tabla-vacia">
+                  {{ busqueda ? 'Ningún feriante coincide con la búsqueda.' : 'Todavía no hay feriantes inscriptos.' }}
+                </td>
+              </tr>
             </tbody>
-        </table>
+          </table>
+        </div>
+      </section>
     </div>
-    </template>
+  </main>
+</template>
 
-    <script setup>
-    import {Link,router} from '@inertiajs/vue3'
-    
-    defineProps({
-        feriantes:{
-            type:Array,
-            default:()=>[],
-        },
-    })
+<script setup>
+import { ref, computed } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
 
-    function cambiarEstado(id,estado){
-        router.patch(`/coordinador/feriantes/${id}/estado`,{ estado },{preserveScroll:true})
-    }
+const props = defineProps({
+  feriantes: {
+    type: Array,
+    default: () => [],
+  },
+})
 
+const busqueda = ref('')
 
-    function eliminar(id){
-        if (confirm('¿Eliminar este feriante? Se liberará su puesto.')){
-            router.delete(`/coordinador/feriantes/${id}`,{preserveScroll:true})
-        }
-    }
-    </script>
+// Filtra en el navegador por nombre, apellido, categoría o teléfono
+const filtrados = computed(() => {
+  const texto = busqueda.value.trim().toLowerCase()
+  if (!texto) return props.feriantes
+  return props.feriantes.filter(f =>
+    [f.nombre, f.apellido, f.categoria?.nombre, f.rubro_otro, f.telefono]
+      .filter(Boolean)
+      .some(valor => String(valor).toLowerCase().includes(texto))
+  )
+})
 
+function cantidad(estado) {
+  return props.feriantes.filter(f => f.estado === estado).length
+}
+
+function cambiarEstado(id, estado) {
+  router.patch(`/coordinador/feriantes/${id}/estado`, { estado }, { preserveScroll: true })
+}
+
+function eliminar(feriante) {
+  if (confirm(`¿Eliminar a ${feriante.nombre} ${feriante.apellido}? Se libera su mesa.`)) {
+    router.delete(`/coordinador/feriantes/${feriante.id}`, { preserveScroll: true })
+  }
+}
+</script>
