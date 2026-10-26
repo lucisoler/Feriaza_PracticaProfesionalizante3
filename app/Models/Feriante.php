@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 class Feriante extends Authenticatable
 {
     use HasApiTokens,Notifiable;
@@ -29,8 +29,7 @@ class Feriante extends Authenticatable
         'password' => 'hashed', // Laravel la hashea sola al guardar
     ];
 
-    // La categoría se carga siempre junto con el feriante,
-    // así las vistas pueden mostrar su nombre sin consultas extra.
+    // La categoría se carga siempre junto con el feriante
     protected $with = ['categoria'];
 
     public function categoria(): BelongsTo
@@ -38,6 +37,7 @@ class Feriante extends Authenticatable
         return $this->belongsTo(Categoria::class);
     }
 
+    // Puesto del flujo actual (se reemplaza por las inscripciones más adelante)
     public function puesto(): HasOne
     {
         return $this->hasOne(Puesto::class);
@@ -54,11 +54,5 @@ class Feriante extends Authenticatable
     {
         return $this->hasMany(Consulta::class);
     }
-
-
-
-
-
-
 
 }
