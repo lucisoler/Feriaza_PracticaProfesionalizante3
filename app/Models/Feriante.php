@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\FerianteFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +12,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 class Feriante extends Authenticatable
 {
-    use HasApiTokens,Notifiable;
+    /** @use HasFactory<FerianteFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'nombre', 'apellido', 'email', 'password',
