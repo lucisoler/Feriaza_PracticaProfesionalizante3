@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
 class Feriante extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens,Notifiable;
 
     protected $fillable = [
         'nombre', 'apellido', 'email', 'password',
@@ -54,4 +54,5 @@ class Feriante extends Authenticatable
     {
         return $this->hasMany(Consulta::class);
     }
+
 }

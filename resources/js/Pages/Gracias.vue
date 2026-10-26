@@ -11,7 +11,7 @@
       <div class="fz-tarjeta-cuerpo">
         <h1 class="fz-titulo">¡Listo, ya estás inscripto!</h1>
         <p class="fz-ayuda">
-          Tu mesa quedó reservada. El coordinador va a revisar tu inscripción y te avisa cuando esté aprobada.
+          Tu inscripción quedó registrada. El coordinador la va a revisar y te avisa cuando esté aprobada.
         </p>
 
         <template v-if="whatsapp">

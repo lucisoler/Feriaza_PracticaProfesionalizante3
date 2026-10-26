@@ -20,6 +20,10 @@
         <div v-if="paso === 1">
           <h1 class="fz-titulo">Tus datos</h1>
           <p class="fz-ayuda">Los usamos para avisarte cuando aprueben tu inscripción.</p>
+          <p class="fz-aviso">
+            ¿Ya te inscribiste antes?
+            <Link href="/mi-cuenta/login" style="color: var(--color-quebracho); font-weight: 700">Iniciá sesión en Mi cuenta</Link>
+          </p>
 
           <label class="fz-campo">
             <span class="fz-etiqueta">Nombre</span>
@@ -111,21 +115,29 @@
 
           <div class="fz-acciones">
             <button type="button" class="fz-boton-secundario" @click="paso = 1">Volver</button>
-            <button type="button" class="fz-boton" @click="paso = 3">Elegir mesa</button>
+            <button type="button" class="fz-boton" @click="paso = 3">{{ recibeMesa ? 'Elegir mesa' : 'Seguir' }}</button>
           </div>
         </div>
 
-        <!-- PASO 3: mapa de mesas -->
+        <!-- PASO 3: mapa de mesas (o aviso para quienes traen su propia mesa) -->
         <div v-if="paso === 3">
           <h1 class="fz-titulo">Tu mesa</h1>
-          <p class="fz-ayuda">Tocá una mesa libre del plano de la plaza.</p>
 
-          <MapaPuestos :puestos="puestos" @seleccionar="form.puesto_id = $event" />
+          <template v-if="recibeMesa">
+            <p class="fz-ayuda">Tocá una mesa libre del plano de la plaza.</p>
 
-          <p v-if="form.puesto_id" class="fz-confirmacion">
-            Elegiste la mesa {{ puestos.find(p => p.id === form.puesto_id)?.numero }}.
+            <MapaPuestos :puestos="puestos" @seleccionar="form.puesto_id = $event" />
+
+            <p v-if="form.puesto_id" class="fz-confirmacion">
+              Elegiste la mesa {{ puestos.find(p => p.id === form.puesto_id)?.numero }}.
+            </p>
+            <span v-if="form.errors.puesto_id" class="fz-error">{{ form.errors.puesto_id }}</span>
+          </template>
+
+          <p v-else class="fz-ayuda">
+            En la categoría {{ categoriaElegida?.nombre }} no se asigna mesa de la feria: traés la tuya
+            y el coordinador te indica dónde ubicarte el día del evento.
           </p>
-          <span v-if="form.errors.puesto_id" class="fz-error">{{ form.errors.puesto_id }}</span>
 
           <label class="fz-check">
             <input type="checkbox" v-model="form.asistencia_confirmada" />
@@ -134,7 +146,7 @@
 
           <div class="fz-acciones">
             <button type="button" class="fz-boton-secundario" @click="paso = 2">Volver</button>
-            <button type="button" class="fz-boton" :disabled="!form.puesto_id || !form.asistencia_confirmada || form.processing" @click="enviar">
+            <button type="button" class="fz-boton" :disabled="(recibeMesa && !form.puesto_id) || !form.asistencia_confirmada || form.processing" @click="enviar">
               {{ form.processing ? 'Enviando…' : 'Enviar inscripción' }}
             </button>
           </div>
@@ -145,8 +157,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useForm, usePage } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
+import { Link, useForm, usePage } from '@inertiajs/vue3'
 import MapaPuestos from '../Components/MapaPuestos.vue'
 
 const props = defineProps({
@@ -184,9 +196,18 @@ const form = useForm({
 })
 
 const categorias = computed(() => usePage().props.categorias ?? [])
-const esOtro = computed(() =>
-  categorias.value.find(c => c.id === form.categoria_id)?.nombre === 'Otro'
+const categoriaElegida = computed(() =>
+  categorias.value.find(c => c.id === form.categoria_id)
 )
+const esOtro = computed(() => categoriaElegida.value?.nombre === 'Otro')
+
+// Revendedores (recibe_mesa = false) no eligen mesa (RN-03). Sin categoría elegida, se asume que sí.
+const recibeMesa = computed(() => categoriaElegida.value?.recibe_mesa ?? true)
+
+// Si cambia a una categoría sin mesa, se descarta la mesa elegida antes
+watch(recibeMesa, (valor) => {
+  if (!valor) form.puesto_id = null
+})
 
 function enviar() {
   form.post('/feriantes', {

@@ -18,7 +18,7 @@ class CoordinadorFerianteController extends Controller
 
     public function create():Response{
 
-      return Inertia:: render('Coordonador/FerianteForm',[
+      return Inertia:: render('Coordinador/FerianteForm',[
         'feriante'=>null,
         'puestos'=>Puesto::orderBy('numero')->get(),
 
@@ -93,7 +93,7 @@ public function cambiarEstado(Request $request,int $id):RedirectResponse
 {
 
 $data=$request->validate([
-    'estado'=>'required|in:pendiente,aprovado,rechazado',
+    'estado'=>'required|in:pendiente,aprobado,rechazado',
 ]);
 
 Feriante::findOrFail($id)->update($data);
@@ -133,18 +133,18 @@ return $request->validate([
         Rule::Unique('feriantes','email')->ignore($idFeriante),
 
     ],
-'password'=>$idFeriante ? 'nullable|string|min:6': 'required|string|min:6',
+'password'=>$idFeriante ? 'nullable|string|min:8': 'required|string|min:8',
 'nombre_emprendimiento'=>'nullable|string|max:150',
 'categoria_id' => 'required|exists:categorias,id',
 'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
 'telefono'=>'required|string|max:20',
 'instagram'=>'nullable|string|max:100',
 'facebook'=>'nullable|string|max:100',
-'tiktok'=>'nullable|string|max100',
+'tiktok'=>'nullable|string|max:100',
 'consulta'=>'nullable|string',
-'estado'=>'nullable|in:pendiente,aprovado,rechazado',
+'estado'=>'nullable|in:pendiente,aprobado,rechazado',
 'asistencia_confirmada'=>'nullable|boolean',
-'puesto_id'=>'nullable|exists:puestos,id,'
+'puesto_id'=>'nullable|exists:puestos,id',
 
 ]);
 
