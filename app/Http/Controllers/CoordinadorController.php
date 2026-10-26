@@ -29,4 +29,12 @@ return back()->withErrors(['email'=>'Credenciales Incorrectas']);
 }
 return redirect('/coordinador');
 }
+
+public function logout(Request $request):RedirectResponse{
+Auth::logout();
+$request->session()->invalidate();
+$request->session()->regenerateToken();
+
+return redirect('/login');
+}
 }
