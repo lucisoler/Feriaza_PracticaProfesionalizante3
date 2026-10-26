@@ -76,7 +76,7 @@ class FerianteController extends Controller
         // Queda con la sesión iniciada para entrar directo a "Mi cuenta"
         Auth::guard('feriante')->login($feriante);
 
-        $numero = env('WHATSAPP_COORDINADOR');
+        $numero = config('feria.whatsapp_coordinador');
         $mesa = $puesto ? "Mesa N° {$puesto->numero}" : 'Sin mesa (trae la suya)';
         $msg = urlencode(
             "Nuevo feriante:\n"

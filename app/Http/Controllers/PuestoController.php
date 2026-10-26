@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Puesto;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class PuestoController extends Controller
 {
-public function index():Response{
+    public function index(): Response
+    {
+        $puestos = Puesto::with('feriante:id,nombre,apellido')->orderBy('numero')->get();
 
-$puestos=Puesto::with('feriante:id,nombre,apellido,rubro')->orderBy('número')->get();
-return Inertia::render('Formulario',['puestos'=>$puestos]);
-}
+        return Inertia::render('Formulario', ['puestos' => $puestos]);
+    }
 
-public function liberar(int $id):RedirectResponse{
-$puesto =Puesto::findOrFail($id);
-$puesto->update(['estado'=>'libre','feriante_id'=>null]);
-return back();
-}
+    public function liberar(int $id): RedirectResponse
+    {
+        $puesto = Puesto::findOrFail($id);
+        $puesto->update(['estado' => 'libre', 'feriante_id' => null]);
 
+        return back();
+    }
 }
