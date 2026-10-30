@@ -10,9 +10,14 @@ use Inertia\Response;
 
 class FerianteAuthController extends Controller
 {
-    public function showLogin(): Response
+    // Pantalla de inicio del feriante: el login (con la opción de crear cuenta con Google o Facebook)
+    public function showLogin(): Response|RedirectResponse
     {
-           return Inertia::render('Feriante/Login');
+        if (Auth::guard('feriante')->check()) {
+            return redirect('/mi-cuenta');
+        }
+
+        return Inertia::render('Feriante/Login');
     }
 
     public function login(Request $request):RedirectResponse

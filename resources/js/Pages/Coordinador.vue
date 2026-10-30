@@ -1,16 +1,9 @@
 <template>
   <main class="fz-pagina">
     <div class="fz-panel">
-      <header class="fz-panel-cabecera">
-        <div>
-          <p class="fz-marca-nombre">Feriaza</p>
-          <p class="fz-marca-lugar">Panel del coordinador</p>
-        </div>
-        <div class="fz-panel-acciones">
-          <Link href="/coordinador/feriantes/crear" class="fz-boton-chico">Cargar feriante</Link>
-          <button type="button" class="fz-enlace" @click="router.post('/logout')">Cerrar sesión</button>
-        </div>
-      </header>
+      <PanelCabecera actual="feriantes">
+        <Link href="/coordinador/feriantes/crear" class="fz-boton-chico">Cargar feriante</Link>
+      </PanelCabecera>
 
       <section class="fz-tarjeta">
         <div class="fz-guarda"></div>
@@ -80,6 +73,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
+import PanelCabecera from '../Components/PanelCabecera.vue'
 
 const props = defineProps({
   feriantes: {

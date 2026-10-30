@@ -16,6 +16,10 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | RN-08 | El feriante inscripto que no se presenta dentro de la tolerancia es sancionado. | E-01 |
 | RN-09 | Un número de mesa no puede asignarse a más de un feriante en el mismo evento. | E-01, D-02 |
 | RN-10 | Ningún feriante habilitado debe quedar sin mesa: ante falta de lugar, se asigna según prioridad. | E-01 |
+| RN-11 | La feria se arma en la Plaza Central o en el Pulmón Verde de Juan José Castelli; cada evento se hace en uno de esos lugares. | Coordinador (oct. 2026) |
+| RN-12 | Cada sección del plano corresponde a una categoría, identificada por su color. Un feriante solo puede elegir mesas de las secciones de su categoría. | Coordinador (oct. 2026) |
+| RN-13 | Las zonas no disponibles del plano (monumento, juegos, laguna, playón…) no admiten mesas y se muestran en negro con rayas grises. | Coordinador (oct. 2026) |
+| RN-14 | La inscripción es por día: en un evento de varios días, cada día tiene su propia reserva de mesa. | Coordinador (oct. 2026) |
 
 ## 2. Requerimientos funcionales
 
@@ -30,13 +34,13 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Visitante (feriante sin cuenta) |
 | Disparador / precondición | El visitante elige "Registrarme". No existe una cuenta con el mismo correo. |
-| Descripción | El feriante crea su cuenta mediante un formulario en 3 pasos: datos personales, datos del emprendimiento y credenciales de acceso. |
-| Resultado esperado | Se crea la cuenta con rol Feriante, se inicia sesión automáticamente y se muestra "Mi cuenta". |
+| Descripción | El feriante crea su cuenta desde la pantalla de inicio de sesión: con Facebook o Google ("¿No tenés una cuenta? Creá una con…") o con su email, en un formulario de 2 pasos (datos personales y acceso; emprendimiento). Con Facebook o Google solo completa lo que el proveedor no comparte (teléfono, categoría) y no necesita contraseña. |
+| Resultado esperado | Se crea la cuenta con rol Feriante, se inicia sesión automáticamente y se pasa a elegir evento, día y mesa (RF-07). |
 | Reglas de negocio | RN-01. |
 | Validaciones | Nombre y apellido: obligatorios, máximo 100 caracteres. Teléfono: obligatorio, máximo 20 caracteres. Correo: obligatorio, formato válido, único. Contraseña: obligatoria, mínimo 8 caracteres, con confirmación. Nombre del emprendimiento: opcional, máximo 150 caracteres. Instagram, Facebook y TikTok: opcionales, máximo 100 caracteres cada uno. |
-| Criterio de aceptación | Dado un visitante, cuando completa los 3 pasos con datos válidos, entonces queda registrado y ve "Mi cuenta". Si un campo es inválido, se muestra el error junto al campo y no avanza de paso. Si el correo ya existe, se informa "Este correo ya está registrado". |
+| Criterio de aceptación | Dado un visitante, cuando completa los 2 pasos con datos válidos, entonces queda registrado y pasa a la inscripción. Si un campo es inválido, se muestra el error junto al campo. Si el correo ya existe, se informa "Este correo ya está registrado". Dado un visitante que entra con Google y cuyo email ya tiene cuenta, entonces inicia sesión y la cuenta queda vinculada a Google. |
 | Prioridad | Alta |
-| Trazabilidad | E-01 · OE-1, OE-6 |
+| Trazabilidad | E-01 · OE-1, OE-6 · `FerianteController`, `CuentaSocialController` (Laravel Socialite), `Feriante/Registro.vue` |
 | Estado | Implementado |
 
 #### RF-02 — Selección de rubros
@@ -60,7 +64,7 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Feriante, Coordinador |
 | Disparador / precondición | El usuario tiene una cuenta registrada y elige "Ingresar". |
-| Descripción | El usuario ingresa con correo y contraseña, y puede cerrar sesión. Feriantes y coordinador tienen accesos separados. |
+| Descripción | La vista del feriante comienza en el inicio de sesión (ruta `/`), no en un formulario. El usuario ingresa con correo y contraseña (o con Google/Facebook si creó así su cuenta) y puede cerrar sesión. Feriantes y coordinador tienen accesos separados. |
 | Resultado esperado | El feriante accede a "Mi cuenta"; el coordinador, a su panel. Al cerrar sesión, vuelve a la pantalla de inicio. |
 | Reglas de negocio | Cada rol solo accede a sus propias pantallas y endpoints. |
 | Validaciones | Correo y contraseña obligatorios. Máximo 5 intentos fallidos por minuto (RNF-03). |
@@ -92,14 +96,14 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Coordinador |
 | Disparador / precondición | El coordinador inició sesión y elige "Eventos". |
-| Descripción | El coordinador crea, modifica y cancela eventos con nombre, fecha o fechas, hora de inicio y estado (borrador, abierto, cerrado, cancelado). Las mesas disponibles son los puestos habilitados del plano de la plaza (D-06). |
-| Resultado esperado | El evento queda registrado; al pasar a "abierto", se habilita la inscripción con todos los puestos habilitados libres. |
-| Reglas de negocio | RN-04, RN-09. Un evento con inscriptos no se elimina, solo se cancela. |
-| Validaciones | Nombre obligatorio (máx. 100 caracteres). Fecha de inicio obligatoria, igual o posterior a hoy. Fecha de fin igual o posterior a la de inicio. Hora de inicio obligatoria. |
+| Descripción | El coordinador crea, modifica y cancela eventos con nombre, **lugar** (Plaza Central o Pulmón Verde), fecha o fechas, hora de inicio y estado (borrador, abierto, cerrado, cancelado). Las mesas disponibles son los puestos habilitados del plano de ese lugar (RF-19). Desde cada evento ve el plano con la ocupación día por día. |
+| Resultado esperado | El evento queda registrado; al pasar a "abierto", se habilita la inscripción con todos los puestos habilitados libres en cada día. |
+| Reglas de negocio | RN-04, RN-09, RN-11, RN-14. Un evento con inscriptos no se elimina, solo se cancela. Un evento con mesas reservadas no puede cambiar de lugar. |
+| Validaciones | Nombre obligatorio (máx. 100 caracteres). Lugar obligatorio. Fecha de inicio obligatoria. Fecha de fin igual o posterior a la de inicio. Hora de inicio obligatoria. |
 | Criterio de aceptación | Dado un plano con 40 puestos habilitados, cuando el coordinador crea "Encuentro de danzas" y lo abre, entonces el evento aparece disponible para los feriantes con 40 mesas libres. Si ingresa una fecha pasada, se rechaza con un mensaje. |
 | Prioridad | Alta |
-| Trazabilidad | E-01, D-01 · OE-5 |
-| Estado | Pendiente |
+| Trazabilidad | E-01, D-01 · OE-5 · `EventoController`, `Coordinador/Eventos.vue`, `Coordinador/Evento.vue` |
+| Estado | Parcial (falta rechazar fechas de inicio pasadas) |
 
 #### RF-06 — Aceptación del reglamento
 
@@ -113,8 +117,8 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | Validaciones | La aceptación es obligatoria para continuar. |
 | Criterio de aceptación | Si el feriante no marca la aceptación, el botón "Inscribirme" permanece deshabilitado. Al aceptar, se guarda la fecha de aceptación. |
 | Prioridad | Media |
-| Trazabilidad | E-01 · OE-2 |
-| Estado | Pendiente |
+| Trazabilidad | E-01 · OE-2 · casilla en `Feriante/Inscribirse.vue`, `inscripciones.reglamento_aceptado_at` |
+| Estado | Parcial (falta mostrar el texto completo del reglamento) |
 
 #### RF-07 — Inscripción a un evento y reserva de mesa
 
@@ -122,14 +126,14 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Feriante |
 | Disparador / precondición | El feriante inició sesión, aceptó el reglamento (RF-06) y el evento está abierto. |
-| Descripción | El feriante se inscribe al evento y reserva un número de mesa libre en el mapa de la plaza. |
+| Descripción | Desde "Mi cuenta", el feriante elige un evento abierto, el día y una mesa libre en el plano digitalizado del lugar del evento. Solo puede tocar las mesas de las secciones del color de su categoría; las demás se ven atenuadas y las zonas no disponibles, rayadas. |
 | Resultado esperado | La inscripción queda registrada con su número de mesa y el sistema notifica al coordinador (RF-15). |
-| Reglas de negocio | RN-03, RN-09. Los revendedores se inscriben sin número de mesa (S-06). Un feriante no puede inscribirse dos veces al mismo evento. |
-| Validaciones | La mesa elegida debe existir en el evento y estar libre al momento de confirmar. |
+| Reglas de negocio | RN-03, RN-09, RN-12, RN-13, RN-14. Los revendedores se inscriben sin número de mesa (S-06). Un feriante no puede inscribirse dos veces al mismo evento el mismo día. Puede cancelar su inscripción mientras el evento no terminó, y la mesa se libera. |
+| Validaciones | El día debe ser uno de los del evento y no anterior a hoy. La mesa debe ser del lugar del evento, estar habilitada, en una sección disponible de su categoría y libre ese día al confirmar. |
 | Criterio de aceptación | Dado un feriante de Masas, cuando elige la mesa 12 libre y confirma, entonces la mesa queda reservada y deja de aparecer disponible. Si otro feriante la reservó un instante antes, se informa "Esa mesa ya fue reservada, elegí otra". Dado un revendedor, no se muestra el mapa y la inscripción se registra sin número. |
 | Prioridad | Alta |
-| Trazabilidad | E-01, D-02 · OE-1, OE-2 · mapa SVG de puestos |
-| Estado | Parcial |
+| Trazabilidad | E-01, D-02 · OE-1, OE-2 · `InscripcionController`, `Feriante/Inscribirse.vue`, `Components/PlanoFeria.vue` |
+| Estado | Implementado |
 
 #### RF-08 — Confirmación de asistencia
 
@@ -177,6 +181,21 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | Prioridad | Alta |
 | Trazabilidad | D-01 · OE-5 |
 | Estado | Pendiente |
+
+#### RF-19 — Diseño de la feria sobre el plano
+
+| Campo | Detalle |
+|---|---|
+| Actor | Coordinador |
+| Disparador / precondición | El coordinador inició sesión y elige "Plano de la feria". |
+| Descripción | Sobre el plano digitalizado de la Plaza Central y del Pulmón Verde, el coordinador dibuja secciones, les asigna una categoría (toma su color distintivo, que puede cambiar) o las marca como zona no disponible, y ubica las mesas de cada sección: una por una, distribuyendo N mesas en grilla o arrastrándolas. Puede retirar una mesa del plano (se ve rayada) o eliminarla. |
+| Resultado esperado | El plano queda guardado y es el que ven los feriantes al inscribirse a un evento en ese lugar. |
+| Reglas de negocio | RN-11, RN-12, RN-13. Las mesas se numeran por lugar. No se elimina una mesa ni una sección con inscripciones en eventos abiertos o en borrador. |
+| Validaciones | Una mesa solo se ubica dentro de una sección disponible. Una sección no puede salirse del plano y mide al menos 20 × 20 unidades. El color es hexadecimal (#rrggbb). |
+| Criterio de aceptación | Dada la sección "Vereda norte" de Artesanos, cuando el coordinador distribuye 12 mesas, entonces aparecen numeradas, sin superponerse y en el color de Artesanos. Si intenta poner una mesa sobre el monumento, se informa que es una zona no disponible. |
+| Prioridad | Alta |
+| Trazabilidad | Coordinador (oct. 2026) · OE-2, OE-5 · `PlanoController`, `Coordinador/Plano.vue`, tablas `lugares` y `secciones` |
+| Estado | Implementado |
 
 ### Módulo 4 — Asistencia y sanciones
 
@@ -312,12 +331,13 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | RF-02 | Cuenta y acceso | E-01 | OE-1, OE-2 | RN-01, RN-02, RN-03 | Alta | Parcial |
 | RF-03 | Cuenta y acceso | — | OE-1 | — | Alta | Implementado |
 | RF-04 | Cuenta y acceso | — | OE-1 | — | Alta | Implementado |
-| RF-05 | Eventos e inscripción | E-01, D-01 | OE-5 | RN-04, RN-09 | Alta | Pendiente |
-| RF-06 | Eventos e inscripción | E-01 | OE-2 | RN-05, RN-06 | Media | Pendiente |
-| RF-07 | Eventos e inscripción | E-01, D-02 | OE-1, OE-2 | RN-03, RN-09 | Alta | Parcial |
+| RF-05 | Eventos e inscripción | E-01, D-01 | OE-5 | RN-04, RN-09, RN-11, RN-14 | Alta | Parcial |
+| RF-06 | Eventos e inscripción | E-01 | OE-2 | RN-05, RN-06 | Media | Parcial |
+| RF-07 | Eventos e inscripción | E-01, D-02 | OE-1, OE-2 | RN-03, RN-09, RN-12, RN-13, RN-14 | Alta | Implementado |
 | RF-08 | Eventos e inscripción | E-01 | OE-3 | RN-10 | Media | Pendiente |
 | RF-09 | Mesas y listados | E-01 | OE-2 | RN-02, RN-03, RN-09, RN-10 | Alta | Pendiente |
-| RF-10 | Mesas y listados | D-01 | OE-5 | RN-02 | Alta | Pendiente |
+| RF-10 | Mesas y listados | D-01 | OE-5 | RN-02 | Alta | Parcial |
+| RF-19 | Mesas y listados | Coordinador | OE-2, OE-5 | RN-11, RN-12, RN-13 | Alta | Implementado |
 | RF-11 | Asistencia y sanciones | E-01, D-01 | OE-3 | RN-07 | Media | Pendiente |
 | RF-12 | Asistencia y sanciones | E-01 | OE-3 | RN-08 | Media | Pendiente |
 | RF-13 | Administración | — | OE-5 | RN-01 | Alta | Implementado |

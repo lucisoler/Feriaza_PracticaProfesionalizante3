@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CoordinadorSeeder::class,
             CategoriaSeeder::class,
+            LugarSeeder::class,
             PuestoSeeder::class,
             FerianteSeeder::class,
             EventoSeeder::class,

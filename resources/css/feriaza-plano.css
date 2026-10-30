@@ -1,0 +1,460 @@
+/* =====================================================================
+   Feriaza: planos de la Plaza Central y el Pulmón Verde, inscripción
+   por evento, acceso con Google/Facebook y navegación del panel.
+   Usa los mismos colores de app.css (@theme).
+   ===================================================================== */
+
+@layer components {
+    /* ---------- Tarjeta ancha (para que entre el plano) ---------- */
+
+    .fz-marca-ancha,
+    .fz-tarjeta-ancha {
+        max-width: 60rem;
+    }
+
+    /* ---------- Plano ---------- */
+
+    .fz-plano {
+        /* En pantallas angostas el plano se desplaza de costado para que las mesas se puedan tocar */
+        overflow-x: auto;
+        border: 1px solid var(--color-borde);
+        border-radius: 4px;
+        background: #b9b3a1;
+    }
+
+    .fz-plano-svg {
+        display: block;
+        width: 100%;
+        min-width: 40rem;
+        height: auto;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .fz-plano-agregar,
+    .fz-plano-dibujar {
+        cursor: crosshair;
+    }
+
+    .fz-plano-editar .fz-plano-seccion {
+        cursor: pointer;
+    }
+
+    .fz-plano-editar .fz-plano-mesa {
+        cursor: grab;
+    }
+
+    .fz-plano-elegir .fz-plano-mesa-activa,
+    .fz-plano-ver .fz-plano-mesa-activa {
+        cursor: pointer;
+    }
+
+    .fz-plano-mesa-activa:hover rect,
+    .fz-plano-mesa-activa:focus-visible rect {
+        stroke: var(--color-siesta);
+        stroke-width: 3;
+    }
+
+    .fz-plano-mesa:focus {
+        outline: none;
+    }
+
+    .fz-plano-numero {
+        font-size: 10px;
+        font-weight: 700;
+        font-family: var(--font-sans);
+        pointer-events: none;
+    }
+
+    .fz-plano-etiqueta,
+    .fz-plano-etiqueta-bloqueada {
+        font-size: 13px;
+        font-weight: 700;
+        font-family: var(--font-sans);
+        pointer-events: none;
+    }
+
+    .fz-plano-etiqueta {
+        fill: var(--color-noche);
+    }
+
+    .fz-plano-etiqueta-bloqueada {
+        fill: #fff;
+        paint-order: stroke;
+        stroke: #151515;
+        stroke-width: 4px;
+    }
+
+    /* ---------- Leyenda ---------- */
+
+    .fz-leyenda {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        list-style: none;
+        padding: 0;
+        font-size: 0.85rem;
+        margin: 0 0 0.75rem;
+    }
+
+    .fz-leyenda li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .fz-leyenda i {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+    .fz-leyenda-propia {
+        font-weight: 700;
+    }
+
+    .fz-leyenda-color {
+        position: relative;
+        display: inline-flex;
+        cursor: pointer;
+    }
+
+    .fz-leyenda-color input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .fz-leyenda-color i {
+        box-shadow: 0 0 0 1px var(--color-noche);
+    }
+
+    .fz-muestra-ocupada {
+        background: #a8a49a;
+        border-color: #6f6b62 !important;
+    }
+
+    .fz-muestra-elegida {
+        background: var(--color-siesta);
+        border-color: var(--color-noche) !important;
+    }
+
+    .fz-muestra-bloqueada {
+        background: repeating-linear-gradient(45deg, #151515 0 5px, #7d7d7d 5px 8px);
+        border-color: #151515 !important;
+    }
+
+    .fz-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.05rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: 1.5px solid var(--chip, #8a8a7a);
+        background: color-mix(in srgb, var(--chip, #8a8a7a) 15%, #fff);
+    }
+
+    .fz-chip::before {
+        content: '';
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        background: var(--chip, #8a8a7a);
+    }
+
+    .fz-chip-bloqueado {
+        --chip: #151515;
+        background: #ececec;
+    }
+
+    .fz-punto {
+        display: inline-block;
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        margin-right: 0.3rem;
+        vertical-align: baseline;
+    }
+
+    /* ---------- Login con Google / Facebook ---------- */
+
+    .fz-social {
+        margin-top: 1.75rem;
+        padding-top: 1.25rem;
+        border-top: 1px dashed var(--color-borde);
+        text-align: center;
+    }
+
+    .fz-social-titulo {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .fz-social-botones {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .fz-social-boton {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.6rem 1.1rem;
+        border: 1.5px solid var(--color-borde);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--color-noche);
+        font-weight: 700;
+        text-decoration: none;
+        transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .fz-social-boton:hover {
+        border-color: var(--color-noche);
+        background: #fbf7ea;
+    }
+
+    /* ---------- Opciones de evento y día ---------- */
+
+    .fz-opciones {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        gap: 0.6rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fz-opciones-dias {
+        grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    }
+
+    .fz-opcion {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        text-align: left;
+        padding: 0.7rem 0.9rem;
+        border: 2px solid var(--color-borde);
+        border-radius: 5px;
+        background: #fff;
+        font: inherit;
+        cursor: pointer;
+        transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .fz-opcion:hover:not(:disabled) {
+        border-color: var(--color-monte);
+    }
+
+    .fz-opcion-elegida {
+        border-color: var(--color-quebracho);
+        background: var(--color-siesta-claro);
+    }
+
+    .fz-opcion:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ---------- Lista de inscripciones (Mi cuenta) ---------- */
+
+    .fz-lista {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 0.5rem;
+    }
+
+    .fz-lista-item {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--color-borde);
+    }
+
+    /* Estados de una inscripción y de un evento */
+    .fz-estado-aprobada,
+    .fz-estado-evento-abierto {
+        color: var(--color-monte);
+        background: var(--color-monte-claro);
+    }
+
+    .fz-estado-rechazada,
+    .fz-estado-cancelada,
+    .fz-estado-evento-cancelado {
+        color: var(--color-error);
+        background: #f6dcd8;
+    }
+
+    .fz-estado-evento-borrador {
+        color: #8a5a00;
+        background: var(--color-siesta-claro);
+    }
+
+    .fz-estado-evento-cerrado {
+        color: #5c604f;
+        background: var(--color-polvo);
+    }
+
+    /* ---------- Navegación del panel ---------- */
+
+    .fz-nav,
+    .fz-pestanias {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .fz-nav-item,
+    .fz-pestania {
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--color-monte);
+        text-decoration: none;
+        border: 1.5px solid transparent;
+    }
+
+    .fz-nav-item:hover,
+    .fz-pestania:hover {
+        background: var(--color-monte-claro);
+    }
+
+    .fz-nav-actual,
+    .fz-pestania-actual {
+        color: var(--color-quebracho);
+        border-color: var(--color-quebracho);
+        background: #fffdf8;
+    }
+
+    /* ---------- Editor del plano ---------- */
+
+    .fz-herramientas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.5rem 0;
+    }
+
+    .fz-herramienta {
+        padding: 0.45rem 0.85rem;
+        border: 2px solid var(--color-monte);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--color-monte);
+        font: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+    }
+
+    .fz-herramienta-actual {
+        background: var(--color-monte);
+        color: #fff;
+    }
+
+    .fz-plano-grilla {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .fz-caja {
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--color-borde);
+        border-radius: 5px;
+        background: var(--color-polvo);
+        margin-bottom: 1rem;
+    }
+
+    .fz-caja .fz-acciones {
+        margin-top: 0.75rem;
+    }
+
+    .fz-fila {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .fz-fila .fz-boton-secundario {
+        flex: 0 0 auto;
+        padding: 0.55rem 0.9rem;
+    }
+
+    .fz-pasos-ayuda {
+        padding-left: 1.1rem;
+        font-size: 0.92rem;
+        display: grid;
+        gap: 0.4rem;
+        list-style: decimal;
+    }
+
+    .fz-tabla-compacta {
+        font-size: 0.88rem;
+    }
+
+    .fz-tabla-compacta td,
+    .fz-tabla-compacta th {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .fz-fila-clickeable {
+        cursor: pointer;
+    }
+
+    /* ---------- Formulario de eventos ---------- */
+
+    .fz-form-grilla {
+        display: grid;
+        gap: 0 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    }
+
+    .fz-campo-ancho {
+        grid-column: 1 / -1;
+    }
+
+    .fz-form-evento .fz-acciones {
+        max-width: 26rem;
+        margin-left: auto;
+    }
+
+    /* ---------- Resumen de mesas libres por sección ---------- */
+
+    .fz-resumen-secciones {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .fz-resumen-seccion {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem 0.75rem;
+        border-left: 5px solid var(--chip, #8a8a7a);
+        background: color-mix(in srgb, var(--chip, #8a8a7a) 10%, #fff);
+        border-radius: 3px;
+        font-size: 0.88rem;
+    }
+
+    @media (min-width: 64rem) {
+        .fz-plano-grilla {
+            grid-template-columns: minmax(0, 1fr) 20rem;
+            align-items: start;
+        }
+
+        .fz-plano-svg {
+            min-width: 0;
+        }
+    }
+}

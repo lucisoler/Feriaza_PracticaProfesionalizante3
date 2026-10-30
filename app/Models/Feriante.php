@@ -16,7 +16,7 @@ class Feriante extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'nombre', 'apellido', 'email', 'password',
+        'nombre', 'apellido', 'email', 'password', 'proveedor', 'proveedor_id',
         'nombre_emprendimiento',
         'categoria_id', 'rubro_otro', 'telefono',
         'instagram', 'facebook', 'tiktok',
