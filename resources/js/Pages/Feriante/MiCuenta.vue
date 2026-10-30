@@ -2,7 +2,7 @@
   <main class="fz-pagina">
     <header class="fz-marca">
       <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Feria de la Plaza San Martín, Juan José Castelli, portal del Impenetrable</p>
+      <p class="fz-marca-lugar">Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</p>
     </header>
 
     <section class="fz-tarjeta">
@@ -22,9 +22,39 @@
           <dd><span class="fz-estado" :class="`fz-estado-${feriante.estado}`">{{ feriante.estado }}</span></dd>
           <dt>Categoría</dt>
           <dd>{{ feriante.categoria?.nombre ?? 'Sin categoría' }}</dd>
-          <dt>Mesa</dt>
-          <dd>{{ feriante.puesto?.numero ? `N° ${feriante.puesto.numero}` : (feriante.categoria?.recibe_mesa === false ? 'Traés la tuya' : 'Sin asignar') }}</dd>
+          <dt>Inscripciones</dt>
+          <dd>{{ inscripciones.length }}</dd>
         </dl>
+
+        <div class="fz-cabecera-tarjeta">
+          <h2 class="fz-subtitulo">Mis inscripciones</h2>
+          <Link href="/mi-cuenta/inscripciones/nueva" class="fz-boton-chico">Inscribirme a un evento</Link>
+        </div>
+
+        <p v-if="$page.props.errors.inscripcion" class="fz-error">{{ $page.props.errors.inscripcion }}</p>
+
+        <ul v-if="inscripciones.length" class="fz-lista">
+          <li v-for="i in inscripciones" :key="i.id" class="fz-lista-item">
+            <div>
+              <strong>{{ i.evento }}</strong>
+              <span class="fz-secundario"> · {{ i.lugar }}</span>
+              <p class="fz-secundario" style="margin: 0.15rem 0 0">
+                {{ formatoDia(i.fecha) }}, desde las {{ i.hora }} ·
+                {{ i.mesa ? `Mesa N° ${i.mesa}` : (feriante.categoria?.recibe_mesa === false ? 'Traés tu mesa' : 'Sin mesa') }}
+              </p>
+            </div>
+            <div class="fz-acciones-fila">
+              <span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ i.estado }}</span>
+              <button
+                v-if="i.evento_estado === 'abierto' || i.evento_estado === 'borrador'"
+                type="button" class="fz-accion fz-accion-eliminar" @click="cancelar(i)"
+              >Cancelar</button>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="fz-ayuda">Todavía no te inscribiste a ningún evento.</p>
+
+        <hr class="fz-separador" />
 
         <h2 class="fz-subtitulo">Mis datos</h2>
 
@@ -109,7 +139,7 @@
         </form>
 
         <hr class="fz-separador" />
-        <p class="fz-ayuda">Si no vas a participar más, podés darte de baja. Se libera tu mesa y se borran tus datos.</p>
+        <p class="fz-ayuda">Si no vas a participar más, podés darte de baja. Se liberan tus mesas y se borran tus datos.</p>
         <div class="fz-acciones">
           <button type="button" class="fz-boton-peligro" @click="cancelarInscripcion">Cancelar mi inscripción</button>
         </div>
@@ -120,14 +150,32 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useForm, usePage, router } from '@inertiajs/vue3'
+import { Link, useForm, usePage, router } from '@inertiajs/vue3'
 
 const props = defineProps({
   feriante: {
     type: Object,
     required: true,
   },
+  // [{ id, fecha, estado, evento, evento_estado, lugar, hora, mesa }]
+  inscripciones: {
+    type: Array,
+    default: () => [],
+  },
 })
+
+const formatoFecha = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+
+function formatoDia(dia) {
+  const texto = formatoFecha.format(new Date(`${dia}T00:00:00Z`))
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+function cancelar(inscripcion) {
+  if (confirm(`¿Cancelar tu inscripción a ${inscripcion.evento} del ${formatoDia(inscripcion.fecha).toLowerCase()}? Se libera tu mesa.`)) {
+    router.delete(`/mi-cuenta/inscripciones/${inscripcion.id}`, { preserveScroll: true })
+  }
+}
 
 const form = useForm({
   nombre: props.feriante.nombre,

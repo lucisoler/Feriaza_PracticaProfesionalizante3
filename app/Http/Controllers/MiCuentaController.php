@@ -22,8 +22,25 @@ class MiCuentaController extends Controller
 
         $feriante->load('puesto');
 
+        // Inscripciones por evento y día, de la más próxima a la más lejana
+        $inscripciones = $feriante->inscripciones()
+            ->with(['evento:id,nombre,lugar_id,hora_inicio,estado', 'evento.lugar:id,nombre', 'puesto:id,numero'])
+            ->orderBy('fecha')
+            ->get()
+            ->map(fn ($i) => [
+                'id' => $i->id,
+                'fecha' => $i->fecha->toDateString(),
+                'estado' => $i->estado,
+                'evento' => $i->evento->nombre,
+                'evento_estado' => $i->evento->estado,
+                'lugar' => $i->evento->lugar?->nombre,
+                'hora' => substr($i->evento->hora_inicio, 0, 5),
+                'mesa' => $i->puesto?->numero,
+            ]);
+
         return Inertia::render('Feriante/MiCuenta',[
             'feriante'=>$feriante,
+            'inscripciones'=>$inscripciones,
         ]);
     }
 
