@@ -2,7 +2,7 @@
   <main class="fz-pagina">
     <header class="fz-marca">
       <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Feria de la Plaza San Martín, Juan José Castelli, portal del Impenetrable</p>
+      <p class="fz-marca-lugar">Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</p>
     </header>
 
     <section class="fz-tarjeta">
@@ -11,7 +11,7 @@
       <div class="fz-tarjeta-cuerpo">
         <h1 class="fz-titulo">¡Listo, ya estás inscripto!</h1>
         <p class="fz-ayuda">
-          Tu inscripción quedó registrada. El coordinador la va a revisar y te avisa cuando esté aprobada.
+          Tu inscripción y tu mesa quedaron registradas. El coordinador las va a revisar y te avisa cuando estén aprobadas.
         </p>
 
         <template v-if="whatsapp">

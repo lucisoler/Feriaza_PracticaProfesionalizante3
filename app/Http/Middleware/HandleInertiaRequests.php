@@ -32,7 +32,7 @@ class HandleInertiaRequests extends Middleware
             // Lista de categorías para los selectores de los formularios
             'categorias' => fn () => Categoria::orderBy('prioridad')
                 ->orderBy('nombre')
-                ->get(['id', 'nombre', 'recibe_mesa']),
+                ->get(['id', 'nombre', 'recibe_mesa', 'color']),
         ];
     }
 }

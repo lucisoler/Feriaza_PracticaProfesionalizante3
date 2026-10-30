@@ -9,7 +9,7 @@ class Categoria extends Model
 {
     protected $table = 'categorias';
 
-    protected $fillable = ['nombre', 'prioridad', 'recibe_mesa'];
+    protected $fillable = ['nombre', 'prioridad', 'recibe_mesa', 'color'];
 
     protected $casts = [
         'prioridad'   => 'integer',
