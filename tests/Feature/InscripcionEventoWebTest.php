@@ -9,9 +9,12 @@ use App\Models\Inscripcion;
 use App\Models\Lugar;
 use App\Models\Puesto;
 use App\Models\Seccion;
+use App\Models\User;
+use App\Notifications\NuevaInscripcion;
 use Database\Seeders\CategoriaSeeder;
 use Database\Seeders\LugarSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -91,9 +94,13 @@ class InscripcionEventoWebTest extends TestCase
 
     public function test_el_feriante_reserva_una_mesa_de_su_seccion_para_un_dia(): void
     {
-        $this->inscribir($this->artesano)
-            ->assertRedirect('/gracias')
-            ->assertSessionHas('whatsapp');
+        Notification::fake();
+        $coordinador = User::factory()->create();
+
+        $this->inscribir($this->artesano)->assertRedirect('/gracias');
+
+        // El coordinador recibe el aviso por correo (RF-15)
+        Notification::assertSentTo($coordinador, NuevaInscripcion::class);
 
         $this->assertDatabaseHas('inscripciones', [
             'evento_id' => $this->evento->id,

@@ -7,13 +7,17 @@ use App\Models\Feriante;
 use App\Models\Inscripcion;
 use App\Models\Lugar;
 use App\Models\Puesto;
+use App\Models\User;
+use App\Notifications\NuevaInscripcion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 /**
  * Inscripción del feriante a un evento: elige evento, día y una mesa de la
@@ -123,21 +127,16 @@ class InscripcionController extends Controller
             ]);
         });
 
-        $inscripcion->load('evento.lugar', 'puesto');
+        $inscripcion->load('evento.lugar', 'puesto', 'feriante.categoria');
 
-        $numero = config('feria.whatsapp_coordinador');
-        $mesa = $inscripcion->puesto ? "Mesa N° {$inscripcion->puesto->numero}" : 'Sin mesa (trae la suya)';
-        $msg = urlencode(
-            "Nueva inscripción:\n"
-            . "{$feriante->nombre} {$feriante->apellido}\n"
-            . "Categoría: {$feriante->categoria->nombre}\n"
-            . "Evento: {$evento->nombre} ({$evento->lugar->nombre})\n"
-            . 'Día: ' . $inscripcion->fecha->format('d/m/Y') . "\n"
-            . "{$mesa}\n"
-            . "Tel: {$feriante->telefono}"
-        );
+        // Aviso por correo a los coordinadores (RF-15). Si el correo falla, la inscripción igual queda hecha.
+        try {
+            Notification::send(User::all(), new NuevaInscripcion($inscripcion));
+        } catch (Throwable $e) {
+            report($e);
+        }
 
-        return redirect('/gracias')->with('whatsapp', "https://wa.me/{$numero}?text={$msg}");
+        return redirect('/gracias');
     }
 
     public function destroy(int $id): RedirectResponse

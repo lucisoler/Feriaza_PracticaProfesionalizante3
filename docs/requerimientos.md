@@ -72,10 +72,10 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | Descripción | La vista del feriante comienza en el inicio de sesión (ruta `/`), no en un formulario. El usuario ingresa con correo y contraseña (o con Google/Facebook si creó así su cuenta) y puede cerrar sesión. Feriantes y coordinador tienen accesos separados. |
 | Resultado esperado | El feriante accede a "Mi cuenta"; el coordinador, a su panel. Al cerrar sesión, vuelve a la pantalla de inicio. |
 | Reglas de negocio | Cada rol solo accede a sus propias pantallas y endpoints. |
-| Validaciones | Correo y contraseña obligatorios. Máximo 5 intentos fallidos por minuto (RNF-03). |
+| Validaciones | Correo y contraseña obligatorios. Máximo 5 intentos fallidos por minuto (RNF-03). Si el feriante olvidó su contraseña, pide un enlace por correo (vence a los 60 minutos) y crea una nueva; la respuesta es la misma exista o no la cuenta. |
 | Criterio de aceptación | Con credenciales correctas, el usuario accede a su pantalla principal. Con credenciales incorrectas, ve "Correo o contraseña incorrectos" sin indicar cuál falló. Un feriante que intenta abrir una pantalla del coordinador es redirigido a su inicio. |
 | Prioridad | Alta |
-| Trazabilidad | OE-1 · `FerianteAuthController`, `Feriante/Login.vue`, guard `feriante` |
+| Trazabilidad | OE-1 · `FerianteAuthController`, `RecuperarContrasenaController`, `Feriante/Login.vue`, `Feriante/OlvideContrasena.vue`, guard `feriante` |
 | Estado | Implementado |
 
 #### RF-04 — Gestión de la cuenta propia
@@ -288,14 +288,14 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | Campo | Detalle |
 |---|---|
 | Actor | Sistema |
-| Disparador / precondición | Un feriante confirma una inscripción. Está configurado `WHATSAPP_COORDINADOR`. |
-| Descripción | El sistema notifica al coordinador por WhatsApp. |
-| Resultado esperado | El coordinador recibe nombre, categoría, evento y número de mesa. |
+| Disparador / precondición | Un feriante confirma una inscripción. El envío de correos está configurado (`MAIL_*`). |
+| Descripción | El sistema avisa por correo a los coordinadores, sin que el feriante tenga que hacer nada. Si el correo falla, la inscripción igual queda registrada. |
+| Resultado esperado | El coordinador recibe nombre, categoría, evento, día, número de mesa y teléfono, con un enlace al evento en su panel. |
 | Reglas de negocio | — |
-| Validaciones | El número del coordinador se lee de la configuración, no del código. |
+| Validaciones | La cuenta de correo se lee de la configuración, no del código (RNF-05). |
 | Criterio de aceptación | Dada una inscripción nueva, cuando se confirma, entonces se genera la notificación con los cuatro datos. |
 | Prioridad | Media |
-| Trazabilidad | E-01 · OE-4 |
+| Trazabilidad | E-01 · OE-4 · `Notifications/NuevaInscripcion` |
 | Estado | Implementado |
 
 #### RF-16 — Acceso al WhatsApp del coordinador
