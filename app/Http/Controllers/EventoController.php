@@ -73,6 +73,8 @@ class EventoController extends Controller
                 'id' => $i->id,
                 'estado' => $i->estado,
                 'confirmacion' => $i->confirmacion,
+                'medio_pago' => $i->medio_pago,
+                'pagado' => $i->pagado_at !== null,
                 'puesto_id' => $i->puesto_id,
                 'mesa' => $i->puesto?->numero,
                 'feriante' => $i->feriante,
@@ -87,6 +89,16 @@ class EventoController extends Controller
         ]);
     }
 
+    /** El coordinador marca (o desmarca) que recibió el pago de la mesa (RN-17). */
+    public function registrarPago(Request $request, Inscripcion $inscripcion): RedirectResponse
+    {
+        $data = $request->validate(['pagado' => 'required|boolean']);
+
+        $inscripcion->update(['pagado_at' => $data['pagado'] ? now() : null]);
+
+        return back()->with('success', $data['pagado'] ? 'Pago registrado.' : 'Se quitó el pago registrado.');
+    }
+
     private function validar(Request $request): array
     {
         return $request->validate([
@@ -95,6 +107,9 @@ class EventoController extends Controller
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
             'hora_inicio' => 'required|date_format:H:i',
+            // Día y hora de cobro de las mesas, los fija el coordinador (RN-17)
+            'pago_fecha' => 'nullable|date|required_with:pago_hora',
+            'pago_hora' => 'nullable|date_format:H:i|required_with:pago_fecha',
             'estado' => 'required|in:borrador,abierto,cerrado,cancelado',
         ]);
     }

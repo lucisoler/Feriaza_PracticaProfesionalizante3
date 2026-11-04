@@ -17,7 +17,7 @@
         <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
 
         <p v-if="eventos.length === 0" class="fz-ayuda">
-          Por ahora no hay eventos con la inscripción abierta. Te avisamos cuando el coordinador abra uno.
+          Por ahora no hay eventos con la inscripción abierta. La inscripción se abre dos semanas antes de cada evento.
         </p>
 
         <template v-else>
@@ -89,9 +89,11 @@
             </p>
             <span v-if="form.errors.puesto_id" class="fz-error">{{ form.errors.puesto_id }}</span>
 
+            <ReglamentoFeria style="margin-top: 1.25rem" />
+
             <label class="fz-check">
               <input v-model="form.acepta_reglamento" type="checkbox" />
-              <span>Acepto el reglamento y confirmo mi asistencia. Sé que tengo 1 hora de tolerancia desde el inicio de la feria; después corresponde una sanción.</span>
+              <span>Acepto los términos y condiciones y confirmo mi asistencia. Sé que tengo que reconfirmar el puesto 72 horas antes y que la inasistencia o la falta de pago anulan mi cuenta.</span>
             </label>
             <span v-if="form.errors.acepta_reglamento" class="fz-error">{{ form.errors.acepta_reglamento }}</span>
 
@@ -112,6 +114,7 @@ import { computed } from 'vue'
 import { Link, useForm, usePage } from '@inertiajs/vue3'
 import PlanoFeria from '../../Components/PlanoFeria.vue'
 import LeyendaPlano from '../../Components/LeyendaPlano.vue'
+import ReglamentoFeria from '../../Components/ReglamentoFeria.vue'
 
 const props = defineProps({
   feriante: { type: Object, required: true },

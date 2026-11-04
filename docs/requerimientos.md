@@ -20,6 +20,11 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | RN-12 | Cada sección del plano corresponde a una categoría, identificada por su color. Un feriante solo puede elegir mesas de las secciones de su categoría. | Coordinador (oct. 2026) |
 | RN-13 | Las zonas no disponibles del plano (monumento, juegos, laguna, playón…) no admiten mesas y se muestran en negro con rayas grises. | Coordinador (oct. 2026) |
 | RN-14 | La inscripción es por día: en un evento de varios días, cada día tiene su propia reserva de mesa. | Coordinador (oct. 2026) |
+| RN-15 | La inscripción a un evento se abre dos semanas antes de su primer día. | Coordinador (nov. 2026) |
+| RN-16 | El feriante reconfirma su puesto desde 72 horas antes del inicio de ese día y hasta que empieza la feria. Al reconfirmar elige el medio de pago (efectivo o tarjeta de débito); con débito puede pagar en ese momento. El sistema registra el medio elegido, no cobra. | Coordinador (nov. 2026) |
+| RN-17 | La mesa se paga en el día y la hora que fija el coordinador para cada evento; el coordinador registra cada pago. | Coordinador (nov. 2026) |
+| RN-18 | Son motivo de anulación de la cuenta la inasistencia el día del evento y el incumplimiento del pago requerido. | Coordinador (nov. 2026) |
+| RN-19 | Otras faltas no mencionadas las evalúa el coordinador y pueden ser motivo de anulación. La anulación la decide siempre el coordinador, con un motivo, y libera las mesas reservadas desde ese día. | Coordinador (nov. 2026) |
 
 ## 2. Requerimientos funcionales
 
@@ -111,13 +116,13 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Feriante |
 | Disparador / precondición | El feriante inicia la inscripción a un evento. |
-| Descripción | El feriante lee y acepta el reglamento con los productos prohibidos antes de inscribirse. |
+| Descripción | El feriante lee y acepta el reglamento, con los plazos, el pago y los términos y condiciones (RN-15 a RN-19), antes de inscribirse. |
 | Resultado esperado | Se registra la aceptación con fecha y hora, y se habilita la inscripción. |
-| Reglas de negocio | RN-05, RN-06. |
+| Reglas de negocio | RN-05, RN-06, RN-15 a RN-19. |
 | Validaciones | La aceptación es obligatoria para continuar. |
 | Criterio de aceptación | Si el feriante no marca la aceptación, el botón "Inscribirme" permanece deshabilitado. Al aceptar, se guarda la fecha de aceptación. |
 | Prioridad | Media |
-| Trazabilidad | E-01 · OE-2 · casilla en `Feriante/Inscribirse.vue`, `inscripciones.reglamento_aceptado_at` |
+| Trazabilidad | E-01 · OE-2 · casilla y `Components/ReglamentoFeria.vue` en `Feriante/Inscribirse.vue`, `inscripciones.reglamento_aceptado_at` |
 | Estado | Parcial (falta mostrar el texto completo del reglamento) |
 
 #### RF-07 — Inscripción a un evento y reserva de mesa

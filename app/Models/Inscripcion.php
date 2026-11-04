@@ -15,11 +15,13 @@ class Inscripcion extends Model
 
     protected $fillable = [
         'evento_id', 'feriante_id', 'puesto_id', 'fecha',
-        'estado', 'confirmacion', 'asistencia',
+        'estado', 'confirmacion', 'reconfirmada_at', 'medio_pago', 'pagado_at', 'asistencia',
         'presente_at', 'reglamento_aceptado_at',
     ];
 
     protected $casts = [
+        'reconfirmada_at' => 'datetime',
+        'pagado_at' => 'datetime',
         'presente_at' => 'datetime',
         'reglamento_aceptado_at' => 'datetime',
     ];
@@ -44,6 +46,24 @@ class Inscripcion extends Model
             get: fn (?string $valor) => $valor ? Carbon::parse($valor)->startOfDay() : null,
             set: fn ($valor) => $valor ? Carbon::parse($valor)->toDateString() : null,
         );
+    }
+
+    /** Fecha y hora en que empieza la feria el día de esta inscripción. */
+    public function inicio(): Carbon
+    {
+        return $this->fecha->copy()->setTimeFromTimeString($this->evento->hora_inicio);
+    }
+
+    /** Desde cuándo puede reconfirmar el puesto: 72 horas antes del inicio de ese día (RN-16). */
+    public function aperturaReconfirmacion(): Carbon
+    {
+        return $this->inicio()->subHours(config('feria.horas_reconfirmacion'));
+    }
+
+    public function puedeReconfirmar(): bool
+    {
+        return $this->confirmacion === 'sin_confirmar'
+            && now()->between($this->aperturaReconfirmacion(), $this->inicio());
     }
 
     public function evento(): BelongsTo

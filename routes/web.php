@@ -53,6 +53,8 @@ Route::delete('/',[MiCuentaController::class,'destroy']);
 Route::get('/inscripciones/nueva',[InscripcionController::class,'create']);
 Route::post('/inscripciones',[InscripcionController::class,'store']);
 Route::delete('/inscripciones/{id}',[InscripcionController::class,'destroy']);
+// Reconfirmación del puesto 72 horas antes, con el medio de pago
+Route::patch('/inscripciones/{id}/reconfirmar',[InscripcionController::class,'reconfirmar']);
 });
 
 
@@ -84,6 +86,7 @@ Route::patch('/puestos/{id}/liberar', [PuestoController::class, 'liberar']);
     Route::get('/eventos/{evento}', [EventoController::class, 'show']);
     Route::patch('/eventos/{evento}', [EventoController::class, 'update']);
     Route::delete('/eventos/{evento}', [EventoController::class, 'destroy']);
+    Route::patch('/inscripciones/{inscripcion}/pago', [EventoController::class, 'registrarPago']);
 
     // Diseño de la feria sobre el plano de cada lugar
     Route::get('/plano', [PlanoController::class, 'show']);
