@@ -1,6 +1,7 @@
 import '../css/app.css'
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
+import IndicadorConexion from './Components/IndicadorConexion.vue'
 
 createInertiaApp({
     resolve: name => {
@@ -8,7 +9,7 @@ createInertiaApp({
         return pages[`./Pages/${name}.vue`]
     },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        createApp({ render: () => [h(IndicadorConexion), h(App, props)] })
             .use(plugin)
             .mount(el)
     },

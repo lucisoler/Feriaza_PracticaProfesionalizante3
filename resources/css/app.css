@@ -23,4 +23,34 @@
     --color-noche: #1e2316;            /* texto */
     --color-borde: #d6d0bd;            /* bordes y separadores */
     --color-error: #a3261b;            /* mensajes de error */
+
+    /* Tonos auxiliares, repetidos en varios componentes: así se adaptan solos en modo oscuro */
+    --color-superficie: #fffdf8;          /* tarjetas, cajas, inputs */
+    --color-superficie-hover: #fbf7ea;    /* fila de tabla y botón social al pasar el mouse */
+    --color-texto-tenue: #5c604f;         /* texto secundario/ayuda */
+    --color-estado-negativo-fondo: #f6dcd8; /* fondo de estados rechazado/cancelado/anulado */
+    --color-ambar-texto: #8a5a00;         /* texto de los estados pendiente/borrador */
+    --color-plano-fondo: #b9b3a1;         /* marco del plano de la feria */
+}
+
+/* Modo oscuro: mismos nombres de variable, tonos invertidos. Se activa con
+   data-tema="oscuro" en <html> (ver resources/js/modoOscuro.js). */
+:root[data-tema='oscuro'] {
+    --color-quebracho: #c9674a;
+    --color-quebracho-oscuro: #e2835f;
+    --color-monte: #8fa868;
+    --color-monte-claro: #2c3620;
+    --color-siesta: #e3b23a;
+    --color-siesta-claro: #4a3a14;
+    --color-polvo: #1b1811;
+    --color-noche: #ece7d8;
+    --color-borde: #4a4536;
+    --color-error: #e2776b;
+
+    --color-superficie: #2b2619;
+    --color-superficie-hover: #332d1e;
+    --color-texto-tenue: #b5ad96;
+    --color-estado-negativo-fondo: #4a2420;
+    --color-ambar-texto: #e3b24a;
+    --color-plano-fondo: #2d2a22;
 }

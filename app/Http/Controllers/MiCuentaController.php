@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Inertia\Response;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Categoria;
 use App\Models\Feriante;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MiCuentaController extends Controller
 {
-    public function show():Response
+    public function show(): Response
     {
         $feriante = Auth::guard('feriante')->user();
 
@@ -30,6 +30,7 @@ class MiCuentaController extends Controller
             ->map(fn ($i) => [
                 'id' => $i->id,
                 'fecha' => $i->fecha->toDateString(),
+                'es_hoy' => $i->fecha->isToday(),
                 'estado' => $i->estado,
                 'evento' => $i->evento->nombre,
                 'evento_estado' => $i->evento->estado,
@@ -47,9 +48,9 @@ class MiCuentaController extends Controller
                 'pago_hora' => $i->evento->pago_hora ? substr($i->evento->pago_hora, 0, 5) : null,
             ]);
 
-        return Inertia::render('Feriante/MiCuenta',[
-            'feriante'=>$feriante,
-            'inscripciones'=>$inscripciones,
+        return Inertia::render('Feriante/MiCuenta', [
+            'feriante' => $feriante,
+            'inscripciones' => $inscripciones,
         ]);
     }
 
@@ -61,31 +62,31 @@ class MiCuentaController extends Controller
             abort(401);
         }
 
-        $data =$request->validate([
-         'nombre'=>'required|string|max:100',
-            'apellido'=>'required|string|max:100',
-            'nombre_emprendimiento'=>'nullable|string|max:150',
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'nombre_emprendimiento' => 'nullable|string|max:150',
             'categoria_id' => 'required|exists:categorias,id',
-            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
-            'telefono'=>'required|string|max:20',
-            'instagram'=>'nullable|string|',
-            'facebook'=>'nullable|string|',
-            'tiktok'=>'nullable|string|',
-            'consulta'=>'nullable|string|',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
+            'telefono' => 'required|string|max:20',
+            'instagram' => 'nullable|string|',
+            'facebook' => 'nullable|string|',
+            'tiktok' => 'nullable|string|',
+            'consulta' => 'nullable|string|',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        if (empty($data['password'])){
+        if (empty($data['password'])) {
             unset($data['password']);
         }
 
-                $feriante->update($data);
+        $feriante->update($data);
 
         return back()->with('success', 'Tus datos fueron actualizados.');
 
     }
 
-    public function destroy(Request $request):RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
         $feriante = Auth::guard('feriante')->user();
 
@@ -93,21 +94,18 @@ class MiCuentaController extends Controller
             abort(401);
         }
 
-        if($feriante->puesto){
+        if ($feriante->puesto) {
             $feriante->puesto->update([
-                'estado'=>'libre',
-                'feriante_id'=>null,
+                'estado' => 'libre',
+                'feriante_id' => null,
             ]);
         }
 
         Auth::guard('feriante')->logout();
-             $feriante->delete();
-             $request->session()->invalidate();
+        $feriante->delete();
+        $request->session()->invalidate();
 
-        return redirect('/')->with('success','Tu inscripción fue cancelada.');
-
-
+        return redirect('/')->with('success', 'Tu inscripción fue cancelada.');
 
     }
-
 }

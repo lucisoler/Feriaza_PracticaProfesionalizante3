@@ -67,7 +67,7 @@
               <h2 class="fz-subtitulo" style="margin-top: 1.25rem">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
               <table class="fz-tabla fz-tabla-compacta">
                 <thead>
-                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Pago</th></tr>
+                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Método de pago</th><th>Pago</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
@@ -76,7 +76,8 @@
                       <span class="fz-punto" :style="{ background: colorCategoria(i.feriante.categoria_id) }"></span>
                       {{ i.feriante.nombre }} {{ i.feriante.apellido }}
                     </td>
-                    <td>{{ i.confirmacion === 'confirmada' ? (i.medio_pago === 'debito' ? 'Sí · débito' : 'Sí · efectivo') : 'No' }}</td>
+                    <td>{{ i.confirmacion === 'confirmada' ? 'Sí' : 'No' }}</td>
+                    <td>{{ mediosDePago[i.medio_pago] ?? '—' }}</td>
                     <td>
                       <button type="button" class="fz-accion" :class="i.pagado ? 'fz-accion-aprobar' : 'fz-accion-editar'"
                         :title="i.pagado ? 'Quitar el pago' : 'Registrar el pago'" @click="registrarPago(i)">
@@ -85,7 +86,7 @@
                     </td>
                   </tr>
                   <tr v-if="inscripciones.length === 0">
-                    <td colspan="4" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                    <td colspan="5" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
                   </tr>
                 </tbody>
               </table>
@@ -98,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import PanelCabecera from '../../Components/PanelCabecera.vue'
 import PlanoFeria from '../../Components/PlanoFeria.vue'
@@ -124,6 +125,17 @@ const detalles = computed(() =>
 const inscripcionesOrdenadas = computed(() =>
   [...props.inscripciones].sort((a, b) => (a.mesa ?? 9999) - (b.mesa ?? 9999))
 )
+
+const mediosDePago = { efectivo: 'Efectivo', debito: 'Tarjeta de débito' }
+
+// El panel se actualiza solo: alguien puede reconfirmar, pagar o ceder su lugar sin que el coordinador recargue
+let intervalo = null
+onMounted(() => {
+  intervalo = setInterval(() => {
+    router.reload({ only: ['inscripciones', 'lugar'], preserveScroll: true, preserveState: true })
+  }, 20000)
+})
+onUnmounted(() => clearInterval(intervalo))
 
 function registrarPago(i) {
   router.patch(`/coordinador/inscripciones/${i.id}/pago`, { pagado: !i.pagado }, { preserveScroll: true })

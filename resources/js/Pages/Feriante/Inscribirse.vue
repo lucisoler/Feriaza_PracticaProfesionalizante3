@@ -1,9 +1,6 @@
 <template>
   <main class="fz-pagina">
-    <header class="fz-marca fz-marca-ancha">
-      <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli</p>
-    </header>
+    <MarcaFeriaza ancha>Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli</MarcaFeriaza>
 
     <section class="fz-tarjeta fz-tarjeta-ancha">
       <div class="fz-guarda"></div>
@@ -114,6 +111,7 @@ import { computed } from 'vue'
 import { Link, useForm, usePage } from '@inertiajs/vue3'
 import PlanoFeria from '../../Components/PlanoFeria.vue'
 import LeyendaPlano from '../../Components/LeyendaPlano.vue'
+import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
 import ReglamentoFeria from '../../Components/ReglamentoFeria.vue'
 
 const props = defineProps({

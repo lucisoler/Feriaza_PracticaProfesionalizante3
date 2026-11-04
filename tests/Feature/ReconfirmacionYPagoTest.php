@@ -8,10 +8,12 @@ use App\Models\Feriante;
 use App\Models\Inscripcion;
 use App\Models\Lugar;
 use App\Models\User;
+use App\Notifications\RecordatorioReconfirmacion;
 use Database\Seeders\CategoriaSeeder;
 use Database\Seeders\LugarSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -23,6 +25,7 @@ class ReconfirmacionYPagoTest extends TestCase
     use RefreshDatabase;
 
     private Evento $evento;
+
     private Feriante $feriante;
 
     protected function setUp(): void
@@ -119,6 +122,40 @@ class ReconfirmacionYPagoTest extends TestCase
         $this->assertNotNull($inscripcion->reconfirmada_at);
     }
 
+    public function test_avisa_por_correo_cuando_se_abre_la_reconfirmacion(): void
+    {
+        Notification::fake();
+        $inscripcion = $this->inscripcion();
+
+        // Todavía no se abrió: no se manda nada
+        $this->travelTo(Carbon::parse('2026-11-17 16:59'));
+        $this->artisan('feria:recordar-reconfirmacion');
+        Notification::assertNothingSent();
+
+        // Se abre a las 72 horas: se manda una vez
+        $this->travelTo(Carbon::parse('2026-11-17 17:00'));
+        $this->artisan('feria:recordar-reconfirmacion');
+        Notification::assertSentTo($this->feriante, RecordatorioReconfirmacion::class);
+        $this->assertNotNull($inscripcion->fresh()->recordatorio_reconfirmacion_enviado_at);
+
+        // No se vuelve a mandar en una corrida posterior
+        Notification::fake();
+        $this->artisan('feria:recordar-reconfirmacion');
+        Notification::assertNothingSent();
+    }
+
+    public function test_no_avisa_por_correo_si_ya_se_reconfirmo(): void
+    {
+        Notification::fake();
+        $inscripcion = $this->inscripcion();
+        $inscripcion->update(['confirmacion' => 'confirmada', 'reconfirmada_at' => now(), 'medio_pago' => 'efectivo']);
+
+        $this->travelTo(Carbon::parse('2026-11-17 17:00'));
+        $this->artisan('feria:recordar-reconfirmacion');
+
+        Notification::assertNothingSent();
+    }
+
     public function test_no_puede_reconfirmar_cuando_la_feria_ya_empezo(): void
     {
         $inscripcion = $this->inscripcion();
@@ -174,6 +211,51 @@ class ReconfirmacionYPagoTest extends TestCase
         $this->assertTrue($this->feriante->estaAnulado());
         $this->assertSame('Inasistencia el 20/11', $this->feriante->motivo_anulacion);
         $this->assertDatabaseCount('inscripciones', 0);
+    }
+
+    public function test_libera_las_mesas_sin_pago_cuando_termina_el_dia(): void
+    {
+        $sinPagar = $this->inscripcion();
+        $pagada = Inscripcion::create([
+            'evento_id' => $this->evento->id,
+            'feriante_id' => Feriante::factory()->create(['categoria_id' => $this->feriante->categoria_id])->id,
+            'fecha' => '2026-11-20',
+            'pagado_at' => now(),
+            'reglamento_aceptado_at' => now(),
+        ]);
+
+        // El día de feria todavía no terminó: no se toca nada
+        $this->travelTo(Carbon::parse('2026-11-20 20:00'));
+        $this->artisan('feria:liberar-mesas-sin-pago');
+        $this->assertModelExists($sinPagar);
+
+        // Al día siguiente, se libera la que no pagó; la que sí pagó queda
+        $this->travelTo(Carbon::parse('2026-11-21 08:00'));
+        $this->artisan('feria:liberar-mesas-sin-pago');
+
+        $this->assertModelMissing($sinPagar);
+        $this->assertModelExists($pagada);
+    }
+
+    public function test_el_feriante_cede_su_lugar_el_mismo_dia_y_avisa_al_coordinador(): void
+    {
+        $inscripcion = $this->inscripcion();
+
+        $this->travelTo(Carbon::parse('2026-11-19 10:00'));
+        $this->actingAs($this->feriante, 'feriante')
+            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/ceder-lugar")
+            ->assertSessionHasErrors('inscripcion');
+        $this->assertModelExists($inscripcion);
+
+        $this->travelTo(Carbon::parse('2026-11-20 18:00'));
+        $this->actingAs($this->feriante, 'feriante')
+            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/ceder-lugar")
+            ->assertSessionHas('success');
+
+        $this->assertModelMissing($inscripcion);
+        $this->assertDatabaseHas('avisos', [
+            'mensaje' => "{$this->feriante->nombre} {$this->feriante->apellido} cedió su lugar en {$this->evento->nombre}.",
+        ]);
     }
 
     public function test_una_cuenta_anulada_no_puede_inscribirse(): void

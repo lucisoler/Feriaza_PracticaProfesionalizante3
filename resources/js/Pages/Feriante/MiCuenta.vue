@@ -1,9 +1,6 @@
 <template>
   <main class="fz-pagina">
-    <header class="fz-marca">
-      <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</p>
-    </header>
+    <MarcaFeriaza>Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</MarcaFeriaza>
 
     <section class="fz-tarjeta">
       <div class="fz-guarda"></div>
@@ -71,7 +68,11 @@
             <div class="fz-acciones-fila">
               <span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ i.estado }}</span>
               <button
-                v-if="i.evento_estado === 'abierto' || i.evento_estado === 'borrador'"
+                v-if="i.es_hoy"
+                type="button" class="fz-accion fz-accion-eliminar" @click="cederLugar(i)"
+              >Ceder mi lugar</button>
+              <button
+                v-else-if="i.evento_estado === 'abierto' || i.evento_estado === 'borrador'"
                 type="button" class="fz-accion fz-accion-eliminar" @click="cancelar(i)"
               >Cancelar</button>
             </div>
@@ -179,13 +180,14 @@
 import { computed, reactive } from 'vue'
 import { Link, useForm, usePage, router } from '@inertiajs/vue3'
 import ReglamentoFeria from '../../Components/ReglamentoFeria.vue'
+import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
 
 const props = defineProps({
   feriante: {
     type: Object,
     required: true,
   },
-  // [{ id, fecha, estado, evento, evento_estado, lugar, hora, mesa, confirmacion, puede_reconfirmar,
+  // [{ id, fecha, es_hoy, estado, evento, evento_estado, lugar, hora, mesa, confirmacion, puede_reconfirmar,
   //    reconfirmacion_desde, vencida, medio_pago, pagado, pago_fecha, pago_hora }]
   inscripciones: {
     type: Array,
@@ -203,6 +205,12 @@ function formatoDia(dia) {
 function cancelar(inscripcion) {
   if (confirm(`¿Cancelar tu inscripción a ${inscripcion.evento} del ${formatoDia(inscripcion.fecha).toLowerCase()}? Se libera tu mesa.`)) {
     router.delete(`/mi-cuenta/inscripciones/${inscripcion.id}`, { preserveScroll: true })
+  }
+}
+
+function cederLugar(inscripcion) {
+  if (confirm(`¿Ceder tu lugar en ${inscripcion.evento} de hoy? Se libera tu mesa al instante y avisamos al coordinador.`)) {
+    router.patch(`/mi-cuenta/inscripciones/${inscripcion.id}/ceder-lugar`, {}, { preserveScroll: true })
   }
 }
 

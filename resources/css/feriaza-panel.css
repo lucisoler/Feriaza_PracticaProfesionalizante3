@@ -28,7 +28,7 @@
     }
 
     .fz-resumen dt {
-        color: #5c604f;
+        color: var(--color-texto-tenue);
     }
 
     .fz-resumen dd {
@@ -55,7 +55,7 @@
     }
 
     .fz-estado-pendiente {
-        color: #8a5a00;
+        color: var(--color-ambar-texto);
         background: var(--color-siesta-claro);
     }
 
@@ -67,7 +67,7 @@
     .fz-estado-rechazado,
     .fz-estado-anulado {
         color: var(--color-error);
-        background: #f6dcd8;
+        background: var(--color-estado-negativo-fondo);
     }
 
     /* ---------- Botones extra ---------- */
@@ -85,7 +85,7 @@
     }
 
     .fz-boton-peligro:hover {
-        background: #f6dcd8;
+        background: var(--color-estado-negativo-fondo);
     }
 
     .fz-enlace {
@@ -164,7 +164,7 @@
         text-align: left;
         font-weight: 700;
         font-size: 0.85rem;
-        color: #5c604f;
+        color: var(--color-texto-tenue);
         padding: 0.6rem 0.75rem;
         border-bottom: 2px solid var(--color-quebracho);
     }
@@ -176,17 +176,17 @@
     }
 
     .fz-tabla tbody tr:hover {
-        background: #fbf7ea;
+        background: var(--color-superficie-hover);
     }
 
     .fz-tabla-vacia {
         text-align: center;
-        color: #5c604f;
+        color: var(--color-texto-tenue);
         padding: 2rem 0.75rem !important;
     }
 
     .fz-secundario {
-        color: #5c604f;
+        color: var(--color-texto-tenue);
         font-size: 0.85rem;
     }
 
@@ -216,7 +216,7 @@
     .fz-accion-editar { color: var(--color-noche); }
     .fz-accion-editar:hover { background: var(--color-polvo); }
     .fz-accion-eliminar { color: var(--color-error); }
-    .fz-accion-eliminar:hover { background: #f6dcd8; }
+    .fz-accion-eliminar:hover { background: var(--color-estado-negativo-fondo); }
 
     .fz-accion:disabled {
         opacity: 0.35;
@@ -245,7 +245,7 @@
 
         .fz-tabla td::before {
             content: attr(data-etiqueta);
-            color: #5c604f;
+            color: var(--color-texto-tenue);
             font-size: 0.85rem;
         }
 
