@@ -26,7 +26,6 @@ class HandleInertiaRequests extends Middleware
             // Mensajes que mandan los controladores con ->with(...)
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'whatsapp' => fn () => $request->session()->get('whatsapp'),
             ],
 
             // Lista de categorías para los selectores de los formularios

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\RestablecerContrasena;
 use Database\Factories\FerianteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
@@ -38,6 +39,12 @@ class Feriante extends Authenticatable
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    /** El enlace del correo lleva a la pantalla del feriante, no a la de Laravel por defecto. */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new RestablecerContrasena($token));
     }
 
     /** Cuenta anulada por el coordinador: inasistencia, falta de pago u otra falta (RN-18, RN-19). */

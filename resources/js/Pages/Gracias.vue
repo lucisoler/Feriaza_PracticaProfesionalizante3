@@ -11,19 +11,9 @@
       <div class="fz-tarjeta-cuerpo">
         <h1 class="fz-titulo">¡Listo, ya estás inscripto!</h1>
         <p class="fz-ayuda">
-          Tu inscripción y tu mesa quedaron registradas. El coordinador las va a revisar y te avisa cuando estén aprobadas.
+          Tu inscripción y tu mesa quedaron registradas, y le avisamos al coordinador por correo.
+          Acordate de reconfirmar tu puesto desde “Mi cuenta” 72 horas antes del evento.
         </p>
-
-        <template v-if="whatsapp">
-          <p class="fz-ayuda">
-            Para que el coordinador se entere enseguida, mandale tus datos por WhatsApp.
-          </p>
-          <div class="fz-acciones">
-            <a :href="whatsapp" target="_blank" rel="noopener" class="fz-boton" style="text-align: center; text-decoration: none">
-              Avisar por WhatsApp
-            </a>
-          </div>
-        </template>
 
         <div class="fz-acciones">
           <Link href="/mi-cuenta" class="fz-boton-secundario" style="text-align: center; text-decoration: none">
@@ -36,9 +26,5 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
-
-// El link llega por la sesión: redirect('/gracias')->with('whatsapp', $link)
-const whatsapp = computed(() => usePage().props.flash?.whatsapp)
+import { Link } from '@inertiajs/vue3'
 </script>
