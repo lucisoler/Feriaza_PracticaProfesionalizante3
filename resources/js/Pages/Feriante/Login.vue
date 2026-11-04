@@ -12,6 +12,7 @@
         <h1 class="fz-titulo">Iniciá sesión</h1>
         <p class="fz-ayuda">Entrá con tu email y contraseña para inscribirte a los eventos y elegir tu mesa.</p>
 
+        <p v-if="$page.props.flash?.success" class="fz-aviso" role="status">{{ $page.props.flash.success }}</p>
         <p v-if="$page.props.errors.social" class="fz-error" role="alert" style="margin-bottom: 1rem">{{ $page.props.errors.social }}</p>
 
         <label class="fz-campo">
@@ -25,6 +26,10 @@
           <input v-model="form.password" type="password" class="fz-input" :class="{ 'fz-input-error': form.errors.password }" autocomplete="current-password" />
           <span v-if="form.errors.password" class="fz-error">{{ form.errors.password }}</span>
         </label>
+
+        <p class="fz-ayuda" style="margin: -0.5rem 0 0; text-align: right">
+          <Link href="/mi-cuenta/olvide-contrasena" style="color: var(--color-quebracho); font-weight: 700">¿Olvidaste tu contraseña?</Link>
+        </p>
 
         <div class="fz-acciones">
           <button type="submit" class="fz-boton" :disabled="form.processing">

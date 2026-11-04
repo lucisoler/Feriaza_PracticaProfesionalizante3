@@ -49,9 +49,16 @@ DB_USERNAME=root
 DB_PASSWORD=tu_contraseña
 
 WHATSAPP_COORDINADOR=549XXXXXXXXXX
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=cuenta@gmail.com
+MAIL_PASSWORD=contraseña_de_aplicacion
+MAIL_FROM_ADDRESS=cuenta@gmail.com
 ```
 
-`WHATSAPP_COORDINADOR` es el número del coordinador en formato internacional, sin espacios ni el signo `+`. Ninguna credencial real se sube al repositorio (RNF-05).
+`WHATSAPP_COORDINADOR` es el número del coordinador en formato internacional, sin espacios ni el signo `+`. Los correos (aviso de inscripción al coordinador y recuperación de contraseña) salen de la cuenta de Gmail indicada; `MAIL_PASSWORD` es una contraseña de aplicación de Google (Cuenta de Google → Seguridad → Verificación en dos pasos → Contraseñas de aplicaciones), no la contraseña normal. Con `MAIL_MAILER=log` no se envían y quedan en `storage/logs/laravel.log`. Ninguna credencial real se sube al repositorio (RNF-05).
 
 ### 2.4 Crear la base de datos
 

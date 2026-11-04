@@ -12,6 +12,7 @@ use App\Http\Controllers\CuentaSocialController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\PlanoController;
+use App\Http\Controllers\RecuperarContrasenaController;
 
 //Públicas Feriantes//
 
@@ -39,6 +40,14 @@ Route::get('/mi-cuenta/login',[FerianteAuthController::class,'showLogin'])->name
 
 Route::post('/mi-cuenta/login',[FerianteAuthController::class,'login']);
 Route::post('/mi-cuenta/logout',[FerianteAuthController::class,'logout'])->middleware('auth:feriante');
+
+// ¿Olvidaste tu contraseña? El enlace para crear una nueva llega por correo
+Route::middleware('guest:feriante')->group(function (){
+Route::get('/mi-cuenta/olvide-contrasena',[RecuperarContrasenaController::class,'create']);
+Route::post('/mi-cuenta/olvide-contrasena',[RecuperarContrasenaController::class,'store'])->middleware('throttle:6,1');
+Route::get('/mi-cuenta/restablecer/{token}',[RecuperarContrasenaController::class,'edit']);
+Route::post('/mi-cuenta/restablecer',[RecuperarContrasenaController::class,'update'])->middleware('throttle:6,1');
+});
 
 
 // Area privada del feriante- read/Update/Delete de si mismo//
