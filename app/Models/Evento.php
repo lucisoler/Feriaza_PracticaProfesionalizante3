@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,11 +12,12 @@ class Evento extends Model
 {
     protected $table = 'eventos';
 
-    protected $fillable = ['nombre', 'lugar_id', 'fecha_inicio', 'fecha_fin', 'hora_inicio', 'estado'];
+    protected $fillable = ['nombre', 'lugar_id', 'fecha_inicio', 'fecha_fin', 'hora_inicio', 'pago_fecha', 'pago_hora', 'estado'];
 
     protected $casts = [
         'fecha_inicio' => 'date:Y-m-d',
         'fecha_fin' => 'date:Y-m-d',
+        'pago_fecha' => 'date:Y-m-d',
     ];
 
     public function lugar(): BelongsTo
@@ -32,6 +34,17 @@ class Evento extends Model
     public function estaAbierto(): bool
     {
         return $this->estado === 'abierto';
+    }
+
+    /** Primer día en que el feriante puede inscribirse: dos semanas antes del evento (RN-15). */
+    public function aperturaInscripcion(): Carbon
+    {
+        return $this->fecha_inicio->copy()->subDays(config('feria.dias_apertura_inscripcion'))->startOfDay();
+    }
+
+    public function inscripcionHabilitada(): bool
+    {
+        return $this->estaAbierto() && now()->greaterThanOrEqualTo($this->aperturaInscripcion());
     }
 
     /**

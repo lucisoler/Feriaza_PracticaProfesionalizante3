@@ -80,6 +80,7 @@
             <option value="pendiente">Pendiente</option>
             <option value="aprobado">Aprobado</option>
             <option value="rechazado">Rechazado</option>
+            <option value="anulado">Anulado</option>
           </select>
           <span v-if="form.errors.estado" class="fz-error">{{ form.errors.estado }}</span>
         </label>

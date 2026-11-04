@@ -20,7 +20,7 @@ class Feriante extends Authenticatable
         'nombre_emprendimiento',
         'categoria_id', 'rubro_otro', 'telefono',
         'instagram', 'facebook', 'tiktok',
-        'consulta', 'asistencia_confirmada', 'estado',
+        'consulta', 'asistencia_confirmada', 'estado', 'motivo_anulacion',
     ];
 
     protected $hidden = [
@@ -38,6 +38,12 @@ class Feriante extends Authenticatable
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    /** Cuenta anulada por el coordinador: inasistencia, falta de pago u otra falta (RN-18, RN-19). */
+    public function estaAnulado(): bool
+    {
+        return $this->estado === 'anulado';
     }
 
     // Puesto del flujo actual (se reemplaza por las inscripciones más adelante)

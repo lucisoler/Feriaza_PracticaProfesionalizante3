@@ -177,6 +177,8 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | instagram | varchar(100) | No | Usuario o enlace. |
 | facebook | varchar(100) | No | Usuario o enlace. |
 | tiktok | varchar(100) | No | Usuario o enlace. |
+| estado | enum('pendiente','aprobado','rechazado','anulado') | Sí | Valor inicial: `pendiente`. `anulado` lo asigna el coordinador (RN-18, RN-19) y bloquea nuevas inscripciones. |
+| motivo_anulacion | varchar(255) | No | Obligatorio al anular la cuenta. |
 | remember_token | varchar(100) | No | Token de "recordarme" de Laravel. |
 
 ### eventos
@@ -187,7 +189,9 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | nombre | varchar(100) | Sí | Por ejemplo, "Encuentro de danzas". |
 | fecha_inicio | date | Sí | Primer día del evento. |
 | fecha_fin | date | Sí | Último día. Igual o posterior a `fecha_inicio`. |
-| hora_inicio | time | Sí | Base para calcular la tolerancia de 1 hora (RN-07). |
+| hora_inicio | time | Sí | Base para calcular la tolerancia de 1 hora (RN-07) y la reconfirmación 72 horas antes (RN-16). |
+| pago_fecha | date | No | Día en que el coordinador cobra las mesas (RN-17). |
+| pago_hora | time | No | Hora de cobro. Obligatoria si hay `pago_fecha`. |
 | estado | enum('borrador','abierto','cerrado','cancelado') | Sí | Solo los eventos `abierto` admiten inscripciones. Valor inicial: `borrador`. |
 
 ### puestos
@@ -207,7 +211,10 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | feriante_id | bigint unsigned | Sí | FK a `feriantes.id`. Único junto con `evento_id` (un feriante se inscribe una vez por evento). |
 | puesto_id | bigint unsigned | No | FK a `puestos.id`. Nulo para revendedores (RN-03). Único junto con `evento_id` (RN-09). |
 | estado | enum('pendiente','aprobada','rechazada','cancelada') | Sí | Aprobación del coordinador. Valor inicial: `pendiente`. |
-| confirmacion | enum('sin_confirmar','confirmada','no_asiste') | Sí | Respuesta del feriante (RF-08). Valor inicial: `sin_confirmar`. |
+| confirmacion | enum('sin_confirmar','confirmada','no_asiste') | Sí | Reconfirmación del puesto 72 horas antes (RN-16, RF-08). Valor inicial: `sin_confirmar`. |
+| reconfirmada_at | datetime | No | Fecha y hora de la reconfirmación. |
+| medio_pago | enum('efectivo','debito') | No | Se elige al reconfirmar (RN-16). |
+| pagado_at | datetime | No | Lo registra el coordinador al recibir el pago (RN-17). |
 | asistencia | enum('pendiente','presente','ausente') | Sí | Control del día del evento (RF-11). Valor inicial: `pendiente`. |
 | presente_at | datetime | No | Hora en que se marcó presente. |
 | reglamento_aceptado_at | datetime | Sí | Fecha y hora de aceptación del reglamento (RF-06). |

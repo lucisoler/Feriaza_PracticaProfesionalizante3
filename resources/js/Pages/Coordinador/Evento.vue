@@ -14,6 +14,10 @@
                 {{ evento.lugar?.nombre }} · desde las {{ evento.hora_inicio.slice(0, 5) }} h ·
                 <span class="fz-estado" :class="`fz-estado-evento-${evento.estado}`">{{ evento.estado }}</span>
               </p>
+              <p class="fz-secundario">
+                Pago de las mesas:
+                {{ evento.pago_fecha ? `${formatoDia(evento.pago_fecha)} a las ${evento.pago_hora.slice(0, 5)} h` : 'sin fecha (cargala en Eventos)' }}
+              </p>
             </div>
             <Link href="/coordinador/eventos" class="fz-enlace">Volver a eventos</Link>
           </div>
@@ -63,7 +67,7 @@
               <h2 class="fz-subtitulo" style="margin-top: 1.25rem">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
               <table class="fz-tabla fz-tabla-compacta">
                 <thead>
-                  <tr><th>Mesa</th><th>Feriante</th><th>Estado</th></tr>
+                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Pago</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
@@ -72,10 +76,16 @@
                       <span class="fz-punto" :style="{ background: colorCategoria(i.feriante.categoria_id) }"></span>
                       {{ i.feriante.nombre }} {{ i.feriante.apellido }}
                     </td>
-                    <td><span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ i.estado }}</span></td>
+                    <td>{{ i.confirmacion === 'confirmada' ? (i.medio_pago === 'debito' ? 'Sí · débito' : 'Sí · efectivo') : 'No' }}</td>
+                    <td>
+                      <button type="button" class="fz-accion" :class="i.pagado ? 'fz-accion-aprobar' : 'fz-accion-editar'"
+                        :title="i.pagado ? 'Quitar el pago' : 'Registrar el pago'" @click="registrarPago(i)">
+                        {{ i.pagado ? 'Pagado' : 'Pendiente' }}
+                      </button>
+                    </td>
                   </tr>
                   <tr v-if="inscripciones.length === 0">
-                    <td colspan="3" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                    <td colspan="4" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
                   </tr>
                 </tbody>
               </table>
@@ -89,7 +99,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import PanelCabecera from '../../Components/PanelCabecera.vue'
 import PlanoFeria from '../../Components/PlanoFeria.vue'
 import LeyendaPlano from '../../Components/LeyendaPlano.vue'
@@ -99,7 +109,7 @@ const props = defineProps({
   dias: { type: Array, default: () => [] },
   dia: { type: String, required: true },
   lugar: { type: Object, required: true },
-  // [{ id, estado, confirmacion, puesto_id, mesa, feriante: {...} }]
+  // [{ id, estado, confirmacion, medio_pago, pagado, puesto_id, mesa, feriante: {...} }]
   inscripciones: { type: Array, default: () => [] },
 })
 
@@ -114,6 +124,10 @@ const detalles = computed(() =>
 const inscripcionesOrdenadas = computed(() =>
   [...props.inscripciones].sort((a, b) => (a.mesa ?? 9999) - (b.mesa ?? 9999))
 )
+
+function registrarPago(i) {
+  router.patch(`/coordinador/inscripciones/${i.id}/pago`, { pagado: !i.pagado }, { preserveScroll: true })
+}
 
 function inscripcionDe(p) {
   return props.inscripciones.find(i => i.puesto_id === p.id)

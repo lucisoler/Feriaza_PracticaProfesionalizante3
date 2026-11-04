@@ -93,10 +93,25 @@ public function cambiarEstado(Request $request,int $id):RedirectResponse
 {
 
 $data=$request->validate([
-    'estado'=>'required|in:pendiente,aprobado,rechazado',
+    'estado'=>'required|in:pendiente,aprobado,rechazado,anulado',
+    // Inasistencia, falta de pago u otra falta que evaluó el coordinador (RN-18, RN-19)
+    'motivo_anulacion'=>'nullable|required_if:estado,anulado|string|max:255',
+],[
+    'motivo_anulacion.required_if'=>'Indicá el motivo de la anulación.',
 ]);
 
-Feriante::findOrFail($id)->update($data);
+$feriante=Feriante::findOrFail($id);
+
+if($data['estado']!=='anulado'){
+    $data['motivo_anulacion']=null;
+}
+
+$feriante->update($data);
+
+if($feriante->estaAnulado()){
+    // Una cuenta anulada no conserva mesas: se liberan sus reservas de hoy en adelante
+    $feriante->inscripciones()->whereDate('fecha','>=',today())->delete();
+}
 
 return back();
 
@@ -142,7 +157,7 @@ return $request->validate([
 'facebook'=>'nullable|string|max:100',
 'tiktok'=>'nullable|string|max:100',
 'consulta'=>'nullable|string',
-'estado'=>'nullable|in:pendiente,aprobado,rechazado',
+'estado'=>'nullable|in:pendiente,aprobado,rechazado,anulado',
 'asistencia_confirmada'=>'nullable|boolean',
 'puesto_id'=>'nullable|exists:puestos,id',
 
