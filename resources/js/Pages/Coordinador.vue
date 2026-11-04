@@ -12,7 +12,7 @@
           <div class="fz-cabecera-tarjeta">
             <h1 class="fz-titulo">Feriantes</h1>
             <p class="fz-secundario">
-              {{ cantidad('pendiente') }} pendientes, {{ cantidad('aprobado') }} aprobados y {{ cantidad('rechazado') }} rechazados
+              {{ cantidad('pendiente') }} pendientes, {{ cantidad('aprobado') }} aprobados, {{ cantidad('rechazado') }} rechazados y {{ cantidad('anulado') }} anulados
             </p>
           </div>
 
@@ -46,12 +46,13 @@
                 <td data-etiqueta="Mesa">{{ f.puesto?.numero ?? '-' }}</td>
                 <td data-etiqueta="Teléfono">{{ f.telefono }}</td>
                 <td data-etiqueta="Estado">
-                  <span class="fz-estado" :class="`fz-estado-${f.estado}`">{{ f.estado }}</span>
+                  <span class="fz-estado" :class="`fz-estado-${f.estado}`" :title="f.motivo_anulacion ?? ''">{{ f.estado }}</span>
                 </td>
                 <td class="fz-celda-acciones">
                   <div class="fz-acciones-fila">
                     <button type="button" class="fz-accion fz-accion-aprobar" :disabled="f.estado === 'aprobado'" @click="cambiarEstado(f.id, 'aprobado')">Aprobar</button>
                     <button type="button" class="fz-accion fz-accion-rechazar" :disabled="f.estado === 'rechazado'" @click="cambiarEstado(f.id, 'rechazado')">Rechazar</button>
+                    <button type="button" class="fz-accion fz-accion-rechazar" :disabled="f.estado === 'anulado'" @click="anular(f)">Anular</button>
                     <Link :href="`/coordinador/feriantes/${f.id}/editar`" class="fz-accion fz-accion-editar">Editar</Link>
                     <button type="button" class="fz-accion fz-accion-eliminar" @click="eliminar(f)">Eliminar</button>
                   </div>
@@ -101,6 +102,14 @@ function cantidad(estado) {
 
 function cambiarEstado(id, estado) {
   router.patch(`/coordinador/feriantes/${id}/estado`, { estado }, { preserveScroll: true })
+}
+
+// Inasistencia, falta de pago u otra falta (términos y condiciones)
+function anular(feriante) {
+  const motivo = prompt(`Motivo de la anulación de la cuenta de ${feriante.nombre} ${feriante.apellido} (inasistencia, falta de pago u otra falta). Se liberan sus mesas reservadas.`)
+  if (motivo?.trim()) {
+    router.patch(`/coordinador/feriantes/${feriante.id}/estado`, { estado: 'anulado', motivo_anulacion: motivo.trim() }, { preserveScroll: true })
+  }
 }
 
 function eliminar(feriante) {

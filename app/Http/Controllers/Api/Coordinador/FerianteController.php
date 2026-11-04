@@ -127,7 +127,7 @@ class FerianteController extends Controller
             'instagram' => 'sometimes|nullable|string|max:100',
             'facebook' => 'sometimes|nullable|string|max:100',
             'tiktok' => 'sometimes|nullable|string|max:100',
-            'estado' => 'sometimes|in:pendiente,aprobado,rechazado',
+            'estado' => 'sometimes|in:pendiente,aprobado,rechazado,anulado',
         ]);
     }
 }

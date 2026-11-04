@@ -64,7 +64,8 @@
         background: var(--color-monte-claro);
     }
 
-    .fz-estado-rechazado {
+    .fz-estado-rechazado,
+    .fz-estado-anulado {
         color: var(--color-error);
         background: #f6dcd8;
     }

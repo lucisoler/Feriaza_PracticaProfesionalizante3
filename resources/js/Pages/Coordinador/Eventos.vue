@@ -52,6 +52,16 @@
                 <input v-model="form.hora_inicio" type="time" class="fz-input" :class="{ 'fz-input-error': form.errors.hora_inicio }" />
                 <span v-if="form.errors.hora_inicio" class="fz-error">{{ form.errors.hora_inicio }}</span>
               </label>
+              <label class="fz-campo">
+                <span class="fz-etiqueta">Día de pago de las mesas <span class="fz-opcional">(opcional)</span></span>
+                <input v-model="form.pago_fecha" type="date" class="fz-input" :class="{ 'fz-input-error': form.errors.pago_fecha }" />
+                <span v-if="form.errors.pago_fecha" class="fz-error">{{ form.errors.pago_fecha }}</span>
+              </label>
+              <label class="fz-campo">
+                <span class="fz-etiqueta">Hora de pago</span>
+                <input v-model="form.pago_hora" type="time" class="fz-input" :class="{ 'fz-input-error': form.errors.pago_hora }" />
+                <span v-if="form.errors.pago_hora" class="fz-error">{{ form.errors.pago_hora }}</span>
+              </label>
             </div>
             <div class="fz-acciones">
               <button v-if="editando" type="button" class="fz-boton-secundario" @click="cancelarEdicion">Cancelar</button>
@@ -109,7 +119,7 @@ defineProps({
   lugares: { type: Array, default: () => [] },
 })
 
-const vacio = { nombre: '', lugar_id: null, fecha_inicio: '', fecha_fin: '', hora_inicio: '17:00', estado: 'borrador' }
+const vacio = { nombre: '', lugar_id: null, fecha_inicio: '', fecha_fin: '', hora_inicio: '17:00', pago_fecha: '', pago_hora: '', estado: 'borrador' }
 const form = useForm({ ...vacio })
 const editando = ref(null)
 
@@ -121,6 +131,8 @@ function editar(e) {
     fecha_inicio: e.fecha_inicio,
     fecha_fin: e.fecha_fin,
     hora_inicio: e.hora_inicio.slice(0, 5),
+    pago_fecha: e.pago_fecha ?? '',
+    pago_hora: e.pago_hora?.slice(0, 5) ?? '',
     estado: e.estado,
   })
   form.clearErrors()

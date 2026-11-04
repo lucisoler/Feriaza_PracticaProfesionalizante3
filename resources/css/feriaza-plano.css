@@ -379,6 +379,30 @@
         margin-top: 0.75rem;
     }
 
+    /* Plazos y términos y condiciones (RN-15 a RN-19) */
+    .fz-reglamento summary {
+        cursor: pointer;
+    }
+
+    .fz-reglamento-titulo {
+        font-size: 1rem;
+        margin: 0.9rem 0 0.35rem;
+    }
+
+    .fz-reglamento ul,
+    .fz-reglamento ol {
+        margin: 0 0 0.5rem;
+        padding-left: 1.25rem;
+    }
+
+    .fz-reglamento li {
+        margin-bottom: 0.3rem;
+    }
+
+    .fz-reglamento p {
+        margin: 0 0 0.4rem;
+    }
+
     .fz-fila {
         display: flex;
         gap: 0.5rem;

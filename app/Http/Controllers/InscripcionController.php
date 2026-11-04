@@ -18,17 +18,24 @@ use Inertia\Response;
 /**
  * Inscripción del feriante a un evento: elige evento, día y una mesa de la
  * sección de su categoría en el plano del lugar (RF-06, RF-07; RN-03, RN-09).
+ * Se abre dos semanas antes del evento y el puesto se reconfirma 72 horas
+ * antes, eligiendo el medio de pago (RN-15, RN-16).
  */
 class InscripcionController extends Controller
 {
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
         $feriante = $this->feriante();
 
-        // Solo eventos abiertos con al menos un día por delante
+        if ($feriante->estaAnulado()) {
+            return redirect('/mi-cuenta')->withErrors(['inscripcion' => 'Tu cuenta está anulada: no podés inscribirte a nuevos eventos.']);
+        }
+
+        // Solo eventos abiertos, con al menos un día por delante y cuya inscripción ya se abrió (RN-15)
         $eventos = Evento::with('lugar:id,nombre')
             ->where('estado', 'abierto')
             ->whereDate('fecha_fin', '>=', today())
+            ->whereDate('fecha_inicio', '<=', today()->addDays(config('feria.dias_apertura_inscripcion')))
             ->orderBy('fecha_inicio')
             ->get();
 
@@ -74,8 +81,16 @@ class InscripcionController extends Controller
 
         $evento = Evento::findOrFail($data['evento_id']);
 
+        if ($feriante->estaAnulado()) {
+            throw ValidationException::withMessages(['evento_id' => 'Tu cuenta está anulada: no podés inscribirte a nuevos eventos.']);
+        }
         if (! $evento->estaAbierto()) {
             throw ValidationException::withMessages(['evento_id' => 'Ese evento no tiene la inscripción abierta.']);
+        }
+        if (! $evento->inscripcionHabilitada()) {
+            throw ValidationException::withMessages([
+                'evento_id' => 'La inscripción a ese evento se abre el ' . $evento->aperturaInscripcion()->format('d/m/Y') . '.',
+            ]);
         }
         if (! in_array($data['fecha'], $evento->dias(), true) || $data['fecha'] < today()->toDateString()) {
             throw ValidationException::withMessages(['fecha' => 'Elegí uno de los días del evento.']);
@@ -102,7 +117,8 @@ class InscripcionController extends Controller
                 'puesto_id' => $puesto?->id,
                 'fecha' => $data['fecha'],
                 'estado' => 'pendiente',
-                'confirmacion' => 'confirmada',
+                // Se confirma después, 72 horas antes del evento (RN-16)
+                'confirmacion' => 'sin_confirmar',
                 'reglamento_aceptado_at' => now(),
             ]);
         });
@@ -136,6 +152,35 @@ class InscripcionController extends Controller
         $inscripcion->delete();
 
         return back()->with('success', 'Cancelaste tu inscripción y se liberó la mesa.');
+    }
+
+    /** Reconfirmación del puesto 72 horas antes, eligiendo cómo va a pagar la mesa (RN-16). */
+    public function reconfirmar(Request $request, int $id): RedirectResponse
+    {
+        $inscripcion = $this->feriante()->inscripciones()->with('evento')->findOrFail($id);
+
+        $data = $request->validate([
+            'medio_pago' => 'required|in:efectivo,debito',
+        ], [
+            'medio_pago.required' => 'Elegí cómo vas a pagar la mesa.',
+        ]);
+
+        if ($inscripcion->confirmacion !== 'sin_confirmar') {
+            return back()->withErrors(['inscripcion' => 'Esa inscripción ya fue reconfirmada.']);
+        }
+        if (! $inscripcion->puedeReconfirmar()) {
+            return back()->withErrors([
+                'inscripcion' => 'La reconfirmación se habilita el ' . $inscripcion->aperturaReconfirmacion()->format('d/m/Y') . ' a las ' . $inscripcion->aperturaReconfirmacion()->format('H:i') . ' y cierra al empezar la feria.',
+            ]);
+        }
+
+        $inscripcion->update([
+            'confirmacion' => 'confirmada',
+            'reconfirmada_at' => now(),
+            'medio_pago' => $data['medio_pago'],
+        ]);
+
+        return back()->with('success', 'Reconfirmaste tu puesto. ¡Te esperamos!');
     }
 
     /** La mesa tiene que ser del lugar del evento, de la sección de su categoría y estar libre ese día. */
