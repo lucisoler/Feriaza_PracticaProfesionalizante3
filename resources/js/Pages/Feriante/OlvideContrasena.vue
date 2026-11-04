@@ -1,9 +1,6 @@
 <template>
   <main class="fz-pagina">
-    <header class="fz-marca">
-      <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</p>
-    </header>
+    <MarcaFeriaza>Ferias de la Plaza Central y el Pulmón Verde, Juan José Castelli, portal del Impenetrable</MarcaFeriaza>
 
     <section class="fz-tarjeta">
       <div class="fz-guarda"></div>
@@ -36,6 +33,7 @@
 
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3'
+import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
 
 const form = useForm({
   email: '',

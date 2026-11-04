@@ -1,9 +1,6 @@
 <template>
   <main class="fz-pagina">
-    <header class="fz-marca">
-      <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Panel del coordinador</p>
-    </header>
+    <MarcaFeriaza>Panel del coordinador</MarcaFeriaza>
 
     <section class="fz-tarjeta">
       <div class="fz-guarda"></div>
@@ -111,6 +108,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useForm, usePage, Link } from '@inertiajs/vue3'
+import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
 
 const props = defineProps({
   feriante: {

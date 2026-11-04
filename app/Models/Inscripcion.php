@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Inscripcion extends Model
 {
@@ -16,7 +16,7 @@ class Inscripcion extends Model
     protected $fillable = [
         'evento_id', 'feriante_id', 'puesto_id', 'fecha',
         'estado', 'confirmacion', 'reconfirmada_at', 'medio_pago', 'pagado_at', 'asistencia',
-        'presente_at', 'reglamento_aceptado_at',
+        'presente_at', 'reglamento_aceptado_at', 'recordatorio_reconfirmacion_enviado_at',
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class Inscripcion extends Model
         'pagado_at' => 'datetime',
         'presente_at' => 'datetime',
         'reglamento_aceptado_at' => 'datetime',
+        'recordatorio_reconfirmacion_enviado_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -64,6 +65,12 @@ class Inscripcion extends Model
     {
         return $this->confirmacion === 'sin_confirmar'
             && now()->between($this->aperturaReconfirmacion(), $this->inicio());
+    }
+
+    /** Ya se abrió la reconfirmación y todavía no se le avisó al feriante por correo. */
+    public function debeAvisarseReconfirmacion(): bool
+    {
+        return $this->recordatorio_reconfirmacion_enviado_at === null && $this->puedeReconfirmar();
     }
 
     public function evento(): BelongsTo

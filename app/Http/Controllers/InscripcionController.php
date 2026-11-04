@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aviso;
 use App\Models\Evento;
 use App\Models\Feriante;
 use App\Models\Inscripcion;
@@ -93,7 +94,7 @@ class InscripcionController extends Controller
         }
         if (! $evento->inscripcionHabilitada()) {
             throw ValidationException::withMessages([
-                'evento_id' => 'La inscripción a ese evento se abre el ' . $evento->aperturaInscripcion()->format('d/m/Y') . '.',
+                'evento_id' => 'La inscripción a ese evento se abre el '.$evento->aperturaInscripcion()->format('d/m/Y').'.',
             ]);
         }
         if (! in_array($data['fecha'], $evento->dias(), true) || $data['fecha'] < today()->toDateString()) {
@@ -153,6 +154,30 @@ class InscripcionController extends Controller
         return back()->with('success', 'Cancelaste tu inscripción y se liberó la mesa.');
     }
 
+    /**
+     * El feriante cede su lugar el mismo día de la feria (ej.: se va antes de que termine).
+     * A diferencia de cancelar, se puede hacer aunque el evento ya esté cerrado, y avisa
+     * al coordinador en el panel para que pueda ofrecer la mesa a otra persona.
+     */
+    public function cederLugar(int $id): RedirectResponse
+    {
+        $inscripcion = $this->feriante()->inscripciones()->with('evento.lugar', 'puesto', 'feriante')->findOrFail($id);
+
+        if (! $inscripcion->fecha->isToday()) {
+            return back()->withErrors(['inscripcion' => 'Solo podés ceder tu lugar el mismo día de la feria.']);
+        }
+
+        $mesa = $inscripcion->puesto ? " (mesa N° {$inscripcion->puesto->numero})" : '';
+        Aviso::create([
+            'mensaje' => "{$inscripcion->feriante->nombre} {$inscripcion->feriante->apellido} cedió su lugar en {$inscripcion->evento->nombre}{$mesa}.",
+        ]);
+
+        // Se borra para liberar la mesa al instante (índice único evento + día + mesa)
+        $inscripcion->delete();
+
+        return back()->with('success', 'Cediste tu lugar y avisamos al coordinador.');
+    }
+
     /** Reconfirmación del puesto 72 horas antes, eligiendo cómo va a pagar la mesa (RN-16). */
     public function reconfirmar(Request $request, int $id): RedirectResponse
     {
@@ -169,7 +194,7 @@ class InscripcionController extends Controller
         }
         if (! $inscripcion->puedeReconfirmar()) {
             return back()->withErrors([
-                'inscripcion' => 'La reconfirmación se habilita el ' . $inscripcion->aperturaReconfirmacion()->format('d/m/Y') . ' a las ' . $inscripcion->aperturaReconfirmacion()->format('H:i') . ' y cierra al empezar la feria.',
+                'inscripcion' => 'La reconfirmación se habilita el '.$inscripcion->aperturaReconfirmacion()->format('d/m/Y').' a las '.$inscripcion->aperturaReconfirmacion()->format('H:i').' y cierra al empezar la feria.',
             ]);
         }
 
