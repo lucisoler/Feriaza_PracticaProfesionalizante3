@@ -282,6 +282,7 @@
 
     /* Estados de una inscripción y de un evento */
     .fz-estado-aprobada,
+    .fz-estado-presente,
     .fz-estado-evento-abierto {
         color: var(--color-monte);
         background: var(--color-monte-claro);
@@ -289,6 +290,7 @@
 
     .fz-estado-rechazada,
     .fz-estado-cancelada,
+    .fz-estado-ausente,
     .fz-estado-evento-cancelado {
         color: var(--color-error);
         background: var(--color-estado-negativo-fondo);

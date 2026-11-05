@@ -2,170 +2,130 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Categoria;
 use App\Models\Feriante;
-use App\Models\Puesto;
-use Illuminate\Validation\Rule;
+use App\Notifications\CuentaAnulada;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Categoria;
-
-
+use Throwable;
 
 class CoordinadorFerianteController extends Controller
 {
-
-    public function create():Response{
-
-      return Inertia:: render('Coordinador/FerianteForm',[
-        'feriante'=>null,
-        'puestos'=>Puesto::orderBy('numero')->get(),
-
-    ]);
-
-    }
-
-    public function store(Request $request):RedirectResponse{
-        $data = $this->validarDatos($request,null);
-
-        $puestoId=$data['puesto_id'] ?? null;
-        unset ($data['puesto_id']);
-
-        $feriante = Feriante::create($data);
-
-        if ($puestoId){
-            Puesto::findOrfail($puestoId)->update([
-             'estado'=>'reservado',
-             'feriante_id'=>$feriante->id
-            ]);
-        }
-
-        return redirect('/coordinador')->with('success','Feriante creado.');
-    }
-
-    public function edit(int $id):Response
+    public function create(): Response
     {
 
-    $feriante=Feriante::with('puesto')->findOrFail($id);
+        return Inertia::render('Coordinador/FerianteForm', [
+            'feriante' => null,
+        ]);
 
-    return Inertia::render('Coordinador/FerianteForm',[
-        'feriante'=>$feriante,
-        'puestos'=>Puesto::orderBy('numero')->get(),
-    ]);
-
-}
-
-public function update(Request $request, int $id): RedirectResponse
-{
-$feriante= Feriante::with('puesto')->findOrFail($id);
-$data= $this->validarDatos($request,$feriante->id);
-
-if (empty($data['password'])){
-    unset($data['password']);
-}
-
-$puestoId=$data['puesto_id']?? null;
-unset($data['puesto_id']);
-
-$feriante->update($data);
-
-$puestoActualID=$feriante->puesto->id ?? null;
-
-
-if ($puestoId !==$puestoActualID){
-    if($feriante->puesto){
-        $feriante->puesto->update(['estado'=>'libre','feriante_id'=>null]);
     }
 
-if ($puestoId){
-    Puesto::findOrfail($puestoId)->update([
-        'estado'=>'reservado',
-        'feriante_id'=>$feriante->id,
-    ]);
-}
-   }
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $this->validarDatos($request, null);
 
-   return redirect('/coordinador')->with('success','Feriante actualizado.');
+        Feriante::create($data);
 
-}
-public function cambiarEstado(Request $request,int $id):RedirectResponse
-{
+        return redirect('/coordinador')->with('success', 'Feriante creado.');
+    }
 
-$data=$request->validate([
-    'estado'=>'required|in:pendiente,aprobado,rechazado,anulado',
-    // Inasistencia, falta de pago u otra falta que evaluó el coordinador (RN-18, RN-19)
-    'motivo_anulacion'=>'nullable|required_if:estado,anulado|string|max:255',
-],[
-    'motivo_anulacion.required_if'=>'Indicá el motivo de la anulación.',
-]);
+    public function edit(int $id): Response
+    {
 
-$feriante=Feriante::findOrFail($id);
+        $feriante = Feriante::findOrFail($id);
 
-if($data['estado']!=='anulado'){
-    $data['motivo_anulacion']=null;
-}
+        return Inertia::render('Coordinador/FerianteForm', [
+            'feriante' => $feriante,
+        ]);
 
-$feriante->update($data);
+    }
 
-if($feriante->estaAnulado()){
-    // Una cuenta anulada no conserva mesas: se liberan sus reservas de hoy en adelante
-    $feriante->inscripciones()->whereDate('fecha','>=',today())->delete();
-}
+    public function update(Request $request, int $id): RedirectResponse
+    {
+        $feriante = Feriante::findOrFail($id);
+        $data = $this->validarDatos($request, $feriante->id);
 
-return back();
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
 
-}
+        $feriante->update($data);
 
+        return redirect('/coordinador')->with('success', 'Feriante actualizado.');
 
+    }
 
-public function destroy(int $id):RedirectResponse
-{
+    public function cambiarEstado(Request $request, int $id): RedirectResponse
+    {
 
-$feriante =Feriante::with('puesto')->findOrFail($id);
+        $data = $request->validate([
+            'estado' => 'required|in:pendiente,aprobado,rechazado,anulado',
+            // Inasistencia, falta de pago u otra falta que evaluó el coordinador (RN-18, RN-19)
+            'motivo_anulacion' => 'nullable|required_if:estado,anulado|string|max:255',
+        ], [
+            'motivo_anulacion.required_if' => 'Indicá el motivo de la anulación.',
+        ]);
 
-if($feriante->puesto){
-    $feriante->puesto->update(['estado'=>'libre','feriante_id'=>null]);
+        $feriante = Feriante::findOrFail($id);
 
-}
+        if ($data['estado'] !== 'anulado') {
+            $data['motivo_anulacion'] = null;
+        }
 
-$feriante->delete();
+        $feriante->update($data);
 
-return  back()->with('success','Feriante eliminado.');
+        if ($feriante->estaAnulado()) {
+            // Una cuenta anulada no conserva mesas: se liberan sus reservas de hoy en adelante
+            $feriante->inscripciones()->whereDate('fecha', '>=', today())->delete();
 
-}
+            try {
+                $feriante->notify(new CuentaAnulada($feriante));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
 
+        return back();
 
+    }
 
-private function validarDatos(Request $request,?int $idFeriante): array
-{
+    public function destroy(int $id): RedirectResponse
+    {
 
-return $request->validate([
-    'nombre'=>'required|string|max:100',
-    'apellido'=>'required|string|max:100',
-    'email'=>[
-        'required','email',
-        Rule::Unique('feriantes','email')->ignore($idFeriante),
+        $feriante = Feriante::findOrFail($id);
 
-    ],
-'password'=>$idFeriante ? 'nullable|string|min:8': 'required|string|min:8',
-'nombre_emprendimiento'=>'nullable|string|max:150',
-'categoria_id' => 'required|exists:categorias,id',
-'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
-'telefono'=>'required|string|max:20',
-'instagram'=>'nullable|string|max:100',
-'facebook'=>'nullable|string|max:100',
-'tiktok'=>'nullable|string|max:100',
-'consulta'=>'nullable|string',
-'estado'=>'nullable|in:pendiente,aprobado,rechazado,anulado',
-'asistencia_confirmada'=>'nullable|boolean',
-'puesto_id'=>'nullable|exists:puestos,id',
+        $feriante->delete();
 
-]);
+        return back()->with('success', 'Feriante eliminado.');
 
+    }
 
+    private function validarDatos(Request $request, ?int $idFeriante): array
+    {
 
+        return $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'email' => [
+                'required', 'email',
+                Rule::Unique('feriantes', 'email')->ignore($idFeriante),
 
-}
+            ],
+            'password' => $idFeriante ? 'nullable|string|min:8' : 'required|string|min:8',
+            'nombre_emprendimiento' => 'nullable|string|max:150',
+            'categoria_id' => 'required|exists:categorias,id',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
+            'telefono' => 'required|string|max:20',
+            'instagram' => 'nullable|string|max:100',
+            'facebook' => 'nullable|string|max:100',
+            'tiktok' => 'nullable|string|max:100',
+            'consulta' => 'nullable|string',
+            'estado' => 'nullable|in:pendiente,aprobado,rechazado,anulado',
 
+        ]);
+
+    }
 }

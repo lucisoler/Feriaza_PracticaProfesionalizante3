@@ -82,18 +82,6 @@
           <span v-if="form.errors.estado" class="fz-error">{{ form.errors.estado }}</span>
         </label>
 
-        <label class="fz-campo">
-          <span class="fz-etiqueta">Mesa</span>
-          <select v-model="form.puesto_id" class="fz-input" :disabled="!recibeMesa" :class="{ 'fz-input-error': form.errors.puesto_id }">
-            <option :value="null">Sin mesa asignada</option>
-            <option v-for="p in puestosDisponibles" :key="p.id" :value="p.id">Mesa N° {{ p.numero }}</option>
-          </select>
-          <span v-if="!recibeMesa" class="fz-ayuda" style="display: block; margin: 0.3rem 0 0">
-            Esta categoría no recibe mesa de la feria: el feriante trae la suya.
-          </span>
-          <span v-if="form.errors.puesto_id" class="fz-error">{{ form.errors.puesto_id }}</span>
-        </label>
-
         <div class="fz-acciones">
           <Link href="/coordinador" class="fz-boton-secundario" style="text-align: center; text-decoration: none">Cancelar</Link>
           <button type="submit" class="fz-boton" :disabled="form.processing">
@@ -106,7 +94,7 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useForm, usePage, Link } from '@inertiajs/vue3'
 import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
 
@@ -114,10 +102,6 @@ const props = defineProps({
   feriante: {
     type: Object,
     default: null,
-  },
-  puestos: {
-    type: Array,
-    default: () => [],
   },
 })
 
@@ -131,24 +115,11 @@ const form = useForm({
   categoria_id: props.feriante?.categoria_id ?? null,
   rubro_otro: props.feriante?.rubro_otro ?? '',
   estado: props.feriante?.estado ?? 'pendiente',
-  puesto_id: props.feriante?.puesto?.id ?? null,
 })
 
 const categorias = computed(() => usePage().props.categorias ?? [])
 const categoriaElegida = computed(() => categorias.value.find(c => c.id === form.categoria_id))
 const esOtro = computed(() => categoriaElegida.value?.nombre === 'Otro')
-
-// Revendedores (recibe_mesa = false) no tienen mesa de la feria (RN-03)
-const recibeMesa = computed(() => categoriaElegida.value?.recibe_mesa ?? true)
-
-watch(recibeMesa, (valor) => {
-  if (!valor) form.puesto_id = null
-})
-
-// Mesas libres, más la que ya tiene asignada este feriante
-const puestosDisponibles = computed(() =>
-  props.puestos.filter(p => p.estado === 'libre' || p.id === props.feriante?.puesto?.id)
-)
 
 function guardar() {
   if (props.feriante) {

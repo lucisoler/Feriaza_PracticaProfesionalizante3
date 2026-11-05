@@ -20,11 +20,9 @@ class MiCuentaController extends Controller
             abort(401);
         }
 
-        $feriante->load('puesto');
-
         // Inscripciones por evento y día, de la más próxima a la más lejana
         $inscripciones = $feriante->inscripciones()
-            ->with(['evento:id,nombre,lugar_id,hora_inicio,pago_fecha,pago_hora,estado', 'evento.lugar:id,nombre', 'puesto:id,numero'])
+            ->with(['evento:id,nombre,lugar_id,hora_inicio,estado', 'evento.lugar:id,nombre', 'puesto:id,numero'])
             ->orderBy('fecha')
             ->get()
             ->map(fn ($i) => [
@@ -37,15 +35,12 @@ class MiCuentaController extends Controller
                 'lugar' => $i->evento->lugar?->nombre,
                 'hora' => substr($i->evento->hora_inicio, 0, 5),
                 'mesa' => $i->puesto?->numero,
-                // Reconfirmación 72 horas antes y pago de la mesa (RN-16, RN-17)
+                // Reconfirmación 72 horas antes del día que le toca (RN-16)
                 'confirmacion' => $i->confirmacion,
                 'puede_reconfirmar' => $i->puedeReconfirmar(),
                 'reconfirmacion_desde' => $i->aperturaReconfirmacion()->format('Y-m-d H:i'),
                 'vencida' => $i->inicio()->isPast(),
-                'medio_pago' => $i->medio_pago,
-                'pagado' => $i->pagado_at !== null,
-                'pago_fecha' => $i->evento->pago_fecha?->toDateString(),
-                'pago_hora' => $i->evento->pago_hora ? substr($i->evento->pago_hora, 0, 5) : null,
+                'asistencia' => $i->asistencia,
             ]);
 
         return Inertia::render('Feriante/MiCuenta', [
@@ -92,13 +87,6 @@ class MiCuentaController extends Controller
 
         if (! $feriante instanceof Feriante) {
             abort(401);
-        }
-
-        if ($feriante->puesto) {
-            $feriante->puesto->update([
-                'estado' => 'libre',
-                'feriante_id' => null,
-            ]);
         }
 
         Auth::guard('feriante')->logout();

@@ -16,7 +16,7 @@ class MiCuentaController extends Controller
     // GET /api/v1/mi-cuenta
     public function show(Request $request): JsonResponse
     {
-        return response()->json(['data' => $request->user()->load('puesto')]);
+        return response()->json(['data' => $request->user()]);
     }
 
     // PATCH /api/v1/mi-cuenta: solo se modifican los campos que se envían
@@ -31,7 +31,7 @@ class MiCuentaController extends Controller
             'telefono' => 'sometimes|required|string|max:20',
             'nombre_emprendimiento' => 'sometimes|nullable|string|max:150',
             'categoria_id' => 'sometimes|required|exists:categorias,id',
-            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
             'instagram' => 'sometimes|nullable|string|max:100',
             'facebook' => 'sometimes|nullable|string|max:100',
             'tiktok' => 'sometimes|nullable|string|max:100',
@@ -51,11 +51,6 @@ class MiCuentaController extends Controller
     public function destroy(Request $request): JsonResponse
     {
         $feriante = $request->user();
-
-        $feriante->puesto?->update([
-            'estado' => 'libre',
-            'feriante_id' => null,
-        ]);
 
         $feriante->tokens()->delete();
         $feriante->delete();

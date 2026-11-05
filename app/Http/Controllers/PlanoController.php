@@ -150,11 +150,13 @@ class PlanoController extends Controller
         return back();
     }
 
-    // ---------- Colores de las categorías ----------
+    // ---------- Color de las categorías ----------
 
     public function updateCategoria(Request $request, Categoria $categoria): RedirectResponse
     {
-        $data = $request->validate(['color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/']]);
+        $data = $request->validate([
+            'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
         $categoria->update($data);
 
         return back();
@@ -177,7 +179,7 @@ class PlanoController extends Controller
 
     private function validarDentroDelPlano(Lugar $lugar, array $rect): void
     {
-        if ($rect['x'] + $rect['ancho'] > $lugar->ancho || $rect['y'] + $rect['alto'] > $lugar->alto) {
+        if ($lugar->ancho < $rect['x'] + $rect['ancho'] || $lugar->alto < $rect['y'] + $rect['alto']) {
             throw ValidationException::withMessages(['seccion' => 'La sección se sale del plano.']);
         }
     }

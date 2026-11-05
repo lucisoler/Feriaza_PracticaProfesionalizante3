@@ -12,8 +12,8 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | RN-04 | Las mesas miden 1,5 m (ver S-01). | E-01 |
 | RN-05 | Está prohibida la venta de ropa, excepto ropa interior y medias. | E-01 |
 | RN-06 | Los revendedores no pueden vender electrodomésticos grandes (heladeras, hornos eléctricos). | E-01 |
-| RN-07 | Hay una tolerancia de 1 hora desde el inicio del evento para presentarse. | E-01 |
-| RN-08 | El feriante inscripto que no se presenta dentro de la tolerancia es sancionado. | E-01 |
+| RN-07 | Hay una tolerancia de 1 hora desde el inicio del evento para presentarse; pasado ese plazo sin que el coordinador lo marque presente, se anula automáticamente la inscripción de ese día y se libera la mesa. | E-01, Coordinador (nov. 2026) |
+| RN-08 | El feriante inscripto que no se presenta dentro de la tolerancia es sancionado; si el evento está marcado como "grande", además queda vedado (no puede inscribirse) durante los 3 eventos siguientes. | E-01, Coordinador (nov. 2026) |
 | RN-09 | Un número de mesa no puede asignarse a más de un feriante en el mismo evento. | E-01, D-02 |
 | RN-10 | Ningún feriante habilitado debe quedar sin mesa: ante falta de lugar, se asigna según prioridad. | E-01 |
 | RN-11 | La feria se arma en la Plaza Central o en el Pulmón Verde de Juan José Castelli; cada evento se hace en uno de esos lugares. | Coordinador (oct. 2026) |
@@ -21,9 +21,9 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 | RN-13 | Las zonas no disponibles del plano (monumento, juegos, laguna, playón…) no admiten mesas y se muestran en negro con rayas grises. | Coordinador (oct. 2026) |
 | RN-14 | La inscripción es por día: en un evento de varios días, cada día tiene su propia reserva de mesa. | Coordinador (oct. 2026) |
 | RN-15 | La inscripción a un evento se abre dos semanas antes de su primer día. | Coordinador (nov. 2026) |
-| RN-16 | El feriante reconfirma su puesto desde 72 horas antes del inicio de ese día y hasta que empieza la feria. Al reconfirmar elige el medio de pago (efectivo o tarjeta de débito); con débito puede pagar en ese momento. El sistema registra el medio elegido, no cobra. | Coordinador (nov. 2026) |
-| RN-17 | La mesa se paga en el día y la hora que fija el coordinador para cada evento; el coordinador registra cada pago. | Coordinador (nov. 2026) |
-| RN-18 | Son motivo de anulación de la cuenta la inasistencia el día del evento y el incumplimiento del pago requerido. | Coordinador (nov. 2026) |
+| RN-16 | El feriante reconfirma su puesto desde 72 horas antes del inicio de ese día y hasta que empieza la feria, desde "Mi cuenta". La reconfirmación se avisa también por correo electrónico. | Coordinador (nov. 2026) |
+| RN-17 | Si el feriante no puede ocupar su mesa el día del evento, puede cederla ("Desocupar mesa") desde "Mi cuenta"; el coordinador recibe el aviso en el panel. | Coordinador (nov. 2026) |
+| RN-18 | Es motivo de anulación de la cuenta la inasistencia. La anulación se avisa por correo electrónico. | Coordinador (nov. 2026) |
 | RN-19 | Otras faltas no mencionadas las evalúa el coordinador y pueden ser motivo de anulación. La anulación la decide siempre el coordinador, con un motivo, y libera las mesas reservadas desde ese día. | Coordinador (nov. 2026) |
 
 ## 2. Requerimientos funcionales
@@ -116,7 +116,7 @@ Los roles de usuario y sus permisos se detallan en [roles-y-permisos.md](roles-y
 |---|---|
 | Actor | Feriante |
 | Disparador / precondición | El feriante inicia la inscripción a un evento. |
-| Descripción | El feriante lee y acepta el reglamento, con los plazos, el pago y los términos y condiciones (RN-15 a RN-19), antes de inscribirse. |
+| Descripción | El feriante lee y acepta el reglamento, con los plazos y los términos y condiciones (RN-15 a RN-19), antes de inscribirse. |
 | Resultado esperado | Se registra la aceptación con fecha y hora, y se habilita la inscripción. |
 | Reglas de negocio | RN-05, RN-06, RN-15 a RN-19. |
 | Validaciones | La aceptación es obligatoria para continuar. |

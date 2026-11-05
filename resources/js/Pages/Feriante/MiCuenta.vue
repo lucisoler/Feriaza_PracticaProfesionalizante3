@@ -45,20 +45,12 @@
                 {{ i.mesa ? `Mesa N° ${i.mesa}` : (feriante.categoria?.recibe_mesa === false ? 'Traés tu mesa' : 'Sin mesa') }}
               </p>
 
-              <!-- Reconfirmación 72 horas antes y pago de la mesa -->
+              <!-- Reconfirmación 72 horas antes del día que le toca -->
               <p v-if="i.confirmacion === 'confirmada'" class="fz-secundario" style="margin: 0.15rem 0 0">
-                Puesto reconfirmado · Pago: {{ mediosDePago[i.medio_pago] ?? '—' }} ·
-                <template v-if="i.pagado">pagado</template>
-                <template v-else-if="i.pago_fecha">pagás el {{ formatoDia(i.pago_fecha).toLowerCase() }} a las {{ i.pago_hora }}</template>
-                <template v-else>el coordinador te avisa el día y la hora de pago</template>
+                Puesto reconfirmado.
               </p>
               <form v-else-if="i.puede_reconfirmar" class="fz-fila" style="margin-top: 0.4rem; flex-wrap: wrap" @submit.prevent="reconfirmar(i)">
-                <select v-model="medios[i.id]" class="fz-input" style="width: auto" aria-label="Medio de pago">
-                  <option :value="undefined" disabled>¿Cómo vas a pagar?</option>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="debito">Tarjeta de débito</option>
-                </select>
-                <button type="submit" class="fz-boton-chico" :disabled="!medios[i.id]">Reconfirmar puesto</button>
+                <button type="submit" class="fz-boton-chico">Reconfirmar puesto</button>
               </form>
               <p v-else-if="i.vencida" class="fz-error" style="margin: 0.15rem 0 0">No reconfirmaste el puesto.</p>
               <p v-else class="fz-secundario" style="margin: 0.15rem 0 0">
@@ -70,7 +62,7 @@
               <button
                 v-if="i.es_hoy"
                 type="button" class="fz-accion fz-accion-eliminar" @click="cederLugar(i)"
-              >Ceder mi lugar</button>
+              >Desocupar mesa</button>
               <button
                 v-else-if="i.evento_estado === 'abierto' || i.evento_estado === 'borrador'"
                 type="button" class="fz-accion fz-accion-eliminar" @click="cancelar(i)"
@@ -177,7 +169,7 @@
 </template>
 
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed } from 'vue'
 import { Link, useForm, usePage, router } from '@inertiajs/vue3'
 import ReglamentoFeria from '../../Components/ReglamentoFeria.vue'
 import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
@@ -188,7 +180,7 @@ const props = defineProps({
     required: true,
   },
   // [{ id, fecha, es_hoy, estado, evento, evento_estado, lugar, hora, mesa, confirmacion, puede_reconfirmar,
-  //    reconfirmacion_desde, vencida, medio_pago, pagado, pago_fecha, pago_hora }]
+  //    reconfirmacion_desde, vencida, asistencia }]
   inscripciones: {
     type: Array,
     default: () => [],
@@ -209,17 +201,13 @@ function cancelar(inscripcion) {
 }
 
 function cederLugar(inscripcion) {
-  if (confirm(`¿Ceder tu lugar en ${inscripcion.evento} de hoy? Se libera tu mesa al instante y avisamos al coordinador.`)) {
+  if (confirm(`¿Desocupar tu mesa en ${inscripcion.evento} de hoy? Se libera al instante y avisamos al coordinador.`)) {
     router.patch(`/mi-cuenta/inscripciones/${inscripcion.id}/ceder-lugar`, {}, { preserveScroll: true })
   }
 }
 
-const mediosDePago = { efectivo: 'efectivo', debito: 'tarjeta de débito' }
-// Medio de pago elegido en cada inscripción que se puede reconfirmar
-const medios = reactive({})
-
 function reconfirmar(inscripcion) {
-  router.patch(`/mi-cuenta/inscripciones/${inscripcion.id}/reconfirmar`, { medio_pago: medios[inscripcion.id] }, { preserveScroll: true })
+  router.patch(`/mi-cuenta/inscripciones/${inscripcion.id}/reconfirmar`, {}, { preserveScroll: true })
 }
 
 const form = useForm({

@@ -12,7 +12,7 @@ class Categoria extends Model
     protected $fillable = ['nombre', 'prioridad', 'recibe_mesa', 'color'];
 
     protected $casts = [
-        'prioridad'   => 'integer',
+        'prioridad' => 'integer',
         'recibe_mesa' => 'boolean',
     ];
 

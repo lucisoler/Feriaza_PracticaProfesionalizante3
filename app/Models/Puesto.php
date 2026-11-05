@@ -8,18 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Puesto extends Model
 {
-    protected $fillable = ['lugar_id', 'seccion_id', 'numero', 'estado', 'feriante_id', 'habilitado', 'x', 'y'];
+    protected $fillable = ['lugar_id', 'seccion_id', 'numero', 'habilitado', 'x', 'y'];
 
     protected $casts = [
         'habilitado' => 'boolean',
         'x' => 'integer',
         'y' => 'integer',
     ];
-
-    public function feriante(): BelongsTo
-    {
-        return $this->belongsTo(Feriante::class);
-    }
 
     public function lugar(): BelongsTo
     {

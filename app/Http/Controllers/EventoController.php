@@ -73,8 +73,8 @@ class EventoController extends Controller
                 'id' => $i->id,
                 'estado' => $i->estado,
                 'confirmacion' => $i->confirmacion,
-                'medio_pago' => $i->medio_pago,
-                'pagado' => $i->pagado_at !== null,
+                'asistencia' => $i->asistencia,
+                'puede_marcar_presente' => $i->puedeMarcarsePresente(),
                 'puesto_id' => $i->puesto_id,
                 'mesa' => $i->puesto?->numero,
                 'feriante' => $i->feriante,
@@ -89,14 +89,16 @@ class EventoController extends Controller
         ]);
     }
 
-    /** El coordinador marca (o desmarca) que recibió el pago de la mesa (RN-17). */
-    public function registrarPago(Request $request, Inscripcion $inscripcion): RedirectResponse
+    /** El coordinador marca presente dentro de la hora de tolerancia (RN-07, RF-11). */
+    public function marcarPresente(Inscripcion $inscripcion): RedirectResponse
     {
-        $data = $request->validate(['pagado' => 'required|boolean']);
+        if (! $inscripcion->puedeMarcarsePresente()) {
+            return back()->withErrors(['inscripcion' => 'Solo se marca presente desde que empieza la feria y durante la hora de tolerancia.']);
+        }
 
-        $inscripcion->update(['pagado_at' => $data['pagado'] ? now() : null]);
+        $inscripcion->update(['asistencia' => 'presente', 'presente_at' => now()]);
 
-        return back()->with('success', $data['pagado'] ? 'Pago registrado.' : 'Se quitó el pago registrado.');
+        return back()->with('success', 'Presente registrado.');
     }
 
     private function validar(Request $request): array
@@ -107,10 +109,9 @@ class EventoController extends Controller
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
             'hora_inicio' => 'required|date_format:H:i',
-            // Día y hora de cobro de las mesas, los fija el coordinador (RN-17)
-            'pago_fecha' => 'nullable|date|required_with:pago_hora',
-            'pago_hora' => 'nullable|date_format:H:i|required_with:pago_fecha',
             'estado' => 'required|in:borrador,abierto,cerrado,cancelado',
+            // Define si la inasistencia veta al feriante (RN-07, RN-08)
+            'grande' => 'sometimes|boolean',
         ]);
     }
 }

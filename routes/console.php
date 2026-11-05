@@ -12,6 +12,6 @@ Artisan::command('inspire', function () {
 // revisa cada hora para avisar lo antes posible sin mandar correos de más.
 Schedule::command('feria:recordar-reconfirmacion')->hourly();
 
-// A la madrugada, cuando el día de feria anterior ya terminó seguro, se
-// liberan las mesas de quienes no pagaron (RN-17).
-Schedule::command('feria:liberar-mesas-sin-pago')->dailyAt('03:00');
+// Vencida la hora de tolerancia, se anula la inscripción de quien no se
+// presentó y, si el evento es grande, queda vetado (RN-07, RN-08).
+Schedule::command('feria:aplicar-tolerancia')->everyTenMinutes();

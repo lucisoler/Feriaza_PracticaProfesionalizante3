@@ -5,12 +5,12 @@ namespace App\Models;
 use App\Notifications\RestablecerContrasena;
 use Database\Factories\FerianteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
 class Feriante extends Authenticatable
 {
     /** @use HasFactory<FerianteFactory> */
@@ -21,7 +21,8 @@ class Feriante extends Authenticatable
         'nombre_emprendimiento',
         'categoria_id', 'rubro_otro', 'telefono',
         'instagram', 'facebook', 'tiktok',
-        'consulta', 'asistencia_confirmada', 'estado', 'motivo_anulacion',
+        'consulta', 'estado', 'motivo_anulacion',
+        'vetado_desde_evento_id', 'vetado_motivo', 'vetado_at',
     ];
 
     protected $hidden = [
@@ -29,7 +30,7 @@ class Feriante extends Authenticatable
     ];
 
     protected $casts = [
-        'asistencia_confirmada' => 'boolean',
+        'vetado_at' => 'datetime',
         'password' => 'hashed', // Laravel la hashea sola al guardar
     ];
 
@@ -53,10 +54,25 @@ class Feriante extends Authenticatable
         return $this->estado === 'anulado';
     }
 
-    // Puesto del flujo actual (se reemplaza por las inscripciones más adelante)
-    public function puesto(): HasOne
+    public function vetadoDesdeEvento(): BelongsTo
     {
-        return $this->hasOne(Puesto::class);
+        return $this->belongsTo(Evento::class, 'vetado_desde_evento_id');
+    }
+
+    /** Vetado mientras no pasaron N eventos reales desde el que lo vetó (sin contarlo), RN-07/RN-08. */
+    public function estaVetado(): bool
+    {
+        if (! $this->vetado_desde_evento_id) {
+            return false;
+        }
+
+        $eventoVeto = $this->vetadoDesdeEvento;
+        $eventosPosteriores = Evento::where('id', '!=', $eventoVeto->id)
+            ->where('estado', '!=', 'borrador')
+            ->where('fecha_inicio', '>', $eventoVeto->fecha_inicio)
+            ->count();
+
+        return $eventosPosteriores < config('feria.eventos_veto');
     }
 
     // Participaciones en eventos (D-07)
@@ -70,5 +86,4 @@ class Feriante extends Authenticatable
     {
         return $this->hasMany(Consulta::class);
     }
-
 }

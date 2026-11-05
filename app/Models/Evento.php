@@ -3,21 +3,21 @@
 namespace App\Models;
 
 use Carbon\CarbonPeriod;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 class Evento extends Model
 {
     protected $table = 'eventos';
 
-    protected $fillable = ['nombre', 'lugar_id', 'fecha_inicio', 'fecha_fin', 'hora_inicio', 'pago_fecha', 'pago_hora', 'estado'];
+    protected $fillable = ['nombre', 'lugar_id', 'fecha_inicio', 'fecha_fin', 'hora_inicio', 'estado', 'grande'];
 
     protected $casts = [
         'fecha_inicio' => 'date:Y-m-d',
         'fecha_fin' => 'date:Y-m-d',
-        'pago_fecha' => 'date:Y-m-d',
+        'grande' => 'boolean',
     ];
 
     public function lugar(): BelongsTo

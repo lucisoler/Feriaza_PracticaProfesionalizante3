@@ -14,10 +14,7 @@
                 {{ evento.lugar?.nombre }} · desde las {{ evento.hora_inicio.slice(0, 5) }} h ·
                 <span class="fz-estado" :class="`fz-estado-evento-${evento.estado}`">{{ evento.estado }}</span>
               </p>
-              <p class="fz-secundario">
-                Pago de las mesas:
-                {{ evento.pago_fecha ? `${formatoDia(evento.pago_fecha)} a las ${evento.pago_hora.slice(0, 5)} h` : 'sin fecha (cargala en Eventos)' }}
-              </p>
+              <p v-if="evento.grande" class="fz-secundario">Evento grande: la inasistencia veta al feriante.</p>
             </div>
             <Link href="/coordinador/eventos" class="fz-enlace">Volver a eventos</Link>
           </div>
@@ -67,7 +64,7 @@
               <h2 class="fz-subtitulo" style="margin-top: 1.25rem">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
               <table class="fz-tabla fz-tabla-compacta">
                 <thead>
-                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Método de pago</th><th>Pago</th></tr>
+                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Asistencia</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
@@ -77,16 +74,15 @@
                       {{ i.feriante.nombre }} {{ i.feriante.apellido }}
                     </td>
                     <td>{{ i.confirmacion === 'confirmada' ? 'Sí' : 'No' }}</td>
-                    <td>{{ mediosDePago[i.medio_pago] ?? '—' }}</td>
                     <td>
-                      <button type="button" class="fz-accion" :class="i.pagado ? 'fz-accion-aprobar' : 'fz-accion-editar'"
-                        :title="i.pagado ? 'Quitar el pago' : 'Registrar el pago'" @click="registrarPago(i)">
-                        {{ i.pagado ? 'Pagado' : 'Pendiente' }}
+                      <button v-if="i.puede_marcar_presente" type="button" class="fz-accion fz-accion-aprobar" @click="marcarPresente(i)">
+                        Marcar presente
                       </button>
+                      <span v-else class="fz-estado" :class="`fz-estado-${i.asistencia}`">{{ asistencias[i.asistencia] ?? i.asistencia }}</span>
                     </td>
                   </tr>
                   <tr v-if="inscripciones.length === 0">
-                    <td colspan="5" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                    <td colspan="4" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
                   </tr>
                 </tbody>
               </table>
@@ -110,7 +106,7 @@ const props = defineProps({
   dias: { type: Array, default: () => [] },
   dia: { type: String, required: true },
   lugar: { type: Object, required: true },
-  // [{ id, estado, confirmacion, medio_pago, pagado, puesto_id, mesa, feriante: {...} }]
+  // [{ id, estado, confirmacion, asistencia, puede_marcar_presente, puesto_id, mesa, feriante: {...} }]
   inscripciones: { type: Array, default: () => [] },
 })
 
@@ -126,7 +122,7 @@ const inscripcionesOrdenadas = computed(() =>
   [...props.inscripciones].sort((a, b) => (a.mesa ?? 9999) - (b.mesa ?? 9999))
 )
 
-const mediosDePago = { efectivo: 'Efectivo', debito: 'Tarjeta de débito' }
+const asistencias = { pendiente: 'Pendiente', presente: 'Presente', ausente: 'Ausente' }
 
 // El panel se actualiza solo: alguien puede reconfirmar, pagar o ceder su lugar sin que el coordinador recargue
 let intervalo = null
@@ -137,8 +133,8 @@ onMounted(() => {
 })
 onUnmounted(() => clearInterval(intervalo))
 
-function registrarPago(i) {
-  router.patch(`/coordinador/inscripciones/${i.id}/pago`, { pagado: !i.pagado }, { preserveScroll: true })
+function marcarPresente(i) {
+  router.patch(`/coordinador/inscripciones/${i.id}/presente`, {}, { preserveScroll: true })
 }
 
 function inscripcionDe(p) {

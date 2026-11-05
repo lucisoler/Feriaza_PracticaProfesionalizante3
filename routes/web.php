@@ -10,7 +10,6 @@ use App\Http\Controllers\FerianteController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\MiCuentaController;
 use App\Http\Controllers\PlanoController;
-use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\RecuperarContrasenaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -85,15 +84,14 @@ Route::middleware('auth')->prefix('coordinador')->group(function () {
     Route::patch('/feriantes/{id}/estado', [CoordinadorFerianteController::class, 'cambiarEstado']);
     Route::delete('/feriantes/{id}', [CoordinadorFerianteController::class, 'destroy']);
 
-    Route::patch('/puestos/{id}/liberar', [PuestoController::class, 'liberar']);
-
     // Eventos: lugar, días, estado y ocupación de mesas
     Route::get('/eventos', [EventoController::class, 'index']);
     Route::post('/eventos', [EventoController::class, 'store']);
     Route::get('/eventos/{evento}', [EventoController::class, 'show']);
     Route::patch('/eventos/{evento}', [EventoController::class, 'update']);
     Route::delete('/eventos/{evento}', [EventoController::class, 'destroy']);
-    Route::patch('/inscripciones/{inscripcion}/pago', [EventoController::class, 'registrarPago']);
+    // Lo marca el coordinador durante la hora de tolerancia (RN-07, RF-11)
+    Route::patch('/inscripciones/{inscripcion}/presente', [EventoController::class, 'marcarPresente']);
 
     // Diseño de la feria sobre el plano de cada lugar
     Route::get('/plano', [PlanoController::class, 'show']);

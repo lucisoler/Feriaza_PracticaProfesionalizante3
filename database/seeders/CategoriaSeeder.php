@@ -10,10 +10,10 @@ class CategoriaSeeder extends Seeder
 {
     /** Color distintivo de cada categoría en los planos (RF-19). */
     public const COLORES = [
-        'Artesanos'    => '#b4532a',
+        'Artesanos' => '#b4532a',
         'Manualidades' => '#7b4f9e',
-        'Masas'        => '#d0901c',
-        'Otro'         => '#2a7f8f',
+        'Masas' => '#d0901c',
+        'Otro' => '#2a7f8f',
         'Revendedores' => '#c2457a',
     ];
 

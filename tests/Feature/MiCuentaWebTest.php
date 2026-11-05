@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Feriante;
-use App\Models\Puesto;
 use Database\Seeders\CategoriaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -50,16 +49,13 @@ class MiCuentaWebTest extends TestCase
         $this->assertSame('Nuevo', $this->feriante->fresh()->nombre);
     }
 
-    public function test_la_baja_libera_la_mesa_y_cierra_la_sesion(): void
+    public function test_la_baja_elimina_la_cuenta_y_cierra_la_sesion(): void
     {
-        $puesto = Puesto::create(['numero' => 1, 'estado' => 'reservado', 'feriante_id' => $this->feriante->id]);
-
         $this->actingAs($this->feriante, 'feriante')
             ->delete('/mi-cuenta')
             ->assertRedirect('/');
 
         $this->assertModelMissing($this->feriante);
-        $this->assertSame('libre', $puesto->fresh()->estado);
         $this->assertGuest('feriante');
     }
 }

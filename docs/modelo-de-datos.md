@@ -86,6 +86,7 @@ erDiagram
         string instagram
         string facebook
         string tiktok
+        bigint vetado_desde_evento_id FK
     }
     eventos {
         bigint id PK
@@ -93,6 +94,7 @@ erDiagram
         date fecha_inicio
         date fecha_fin
         time hora_inicio
+        boolean grande
         enum estado
     }
     puestos {
@@ -179,6 +181,9 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | tiktok | varchar(100) | No | Usuario o enlace. |
 | estado | enum('pendiente','aprobado','rechazado','anulado') | Sí | Valor inicial: `pendiente`. `anulado` lo asigna el coordinador (RN-18, RN-19) y bloquea nuevas inscripciones. |
 | motivo_anulacion | varchar(255) | No | Obligatorio al anular la cuenta. |
+| vetado_desde_evento_id | bigint unsigned | No | FK a `eventos.id`: evento en el que no se presentó dentro de la tolerancia (solo si era grande). Bloquea nuevas inscripciones hasta que pasen `eventos_veto` eventos reales más (RN-07, RN-08). |
+| vetado_motivo | varchar(255) | No | Motivo del veto, para mostrarlo al feriante. |
+| vetado_at | datetime | No | Fecha y hora en que se aplicó el veto. |
 | remember_token | varchar(100) | No | Token de "recordarme" de Laravel. |
 
 ### eventos
@@ -190,8 +195,7 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | fecha_inicio | date | Sí | Primer día del evento. |
 | fecha_fin | date | Sí | Último día. Igual o posterior a `fecha_inicio`. |
 | hora_inicio | time | Sí | Base para calcular la tolerancia de 1 hora (RN-07) y la reconfirmación 72 horas antes (RN-16). |
-| pago_fecha | date | No | Día en que el coordinador cobra las mesas (RN-17). |
-| pago_hora | time | No | Hora de cobro. Obligatoria si hay `pago_fecha`. |
+| grande | boolean | Sí | Lo marca el coordinador: si es `true`, la inasistencia dentro de la tolerancia veta al feriante (RN-08). Valor inicial: `false`. |
 | estado | enum('borrador','abierto','cerrado','cancelado') | Sí | Solo los eventos `abierto` admiten inscripciones. Valor inicial: `borrador`. |
 
 ### puestos
@@ -213,9 +217,7 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 | estado | enum('pendiente','aprobada','rechazada','cancelada') | Sí | Aprobación del coordinador. Valor inicial: `pendiente`. |
 | confirmacion | enum('sin_confirmar','confirmada','no_asiste') | Sí | Reconfirmación del puesto 72 horas antes (RN-16, RF-08). Valor inicial: `sin_confirmar`. |
 | reconfirmada_at | datetime | No | Fecha y hora de la reconfirmación. |
-| medio_pago | enum('efectivo','debito') | No | Se elige al reconfirmar (RN-16). |
-| pagado_at | datetime | No | Lo registra el coordinador al recibir el pago (RN-17). |
-| asistencia | enum('pendiente','presente','ausente') | Sí | Control del día del evento (RF-11). Valor inicial: `pendiente`. |
+| asistencia | enum('pendiente','presente','ausente') | Sí | Lo marca el coordinador dentro de la hora de tolerancia; vencida sin marcar, pasa a `ausente` sola (RF-11). Valor inicial: `pendiente`. |
 | presente_at | datetime | No | Hora en que se marcó presente. |
 | reglamento_aceptado_at | datetime | Sí | Fecha y hora de aceptación del reglamento (RF-06). |
 
@@ -225,7 +227,7 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 |---|---|:---:|---|
 | id | bigint unsigned | Sí | Clave primaria. |
 | inscripcion_id | bigint unsigned | Sí | FK a `inscripciones.id`. Única: una sanción por ausencia. La inscripción debe tener `asistencia = ausente`. |
-| registrada_por | bigint unsigned | Sí | FK a `users.id`: coordinador que la registró. |
+| registrada_por | bigint unsigned | No | FK a `users.id`: coordinador que la registró. Nulo si la aplicó el sistema al vencer la tolerancia (RN-07). |
 | motivo | varchar(255) | Sí | Motivo de la sanción. |
 | observaciones | text | No | Detalle adicional. |
 
@@ -257,11 +259,15 @@ Todas las tablas incluyen además `created_at` y `updated_at` (timestamps de Lar
 
 ## 5. Migración del modelo actual al propuesto (Sprint 3)
 
+Plan original de Sprint 3. El seguimiento de qué quedó pendiente vive en el issue #48;
+las dos filas marcadas abajo se revisaron ahí porque el modelo evolucionó después de
+este plan (cuentas `anulado` y veto por inasistencia, RN-18/RN-19/RN-07/RN-08).
+
 | Cambio | Detalle |
 |---|---|
 | Nueva tabla `categorias` | Con seeder de las 5 categorías y sus prioridades. |
 | `feriantes.rubro` → `feriantes.categoria_id` | Convertir el valor actual del enum a la FK correspondiente. |
-| Quitar de `feriantes` | `estado` y `asistencia_confirmada` (pasan a `inscripciones`) y `consulta` (pasa a `consultas`). |
-| Quitar de `puestos` | `estado` y `feriante_id` (la ocupación se deduce de `inscripciones`). Agregar `habilitado`. |
+| Quitar de `feriantes` | ✅ `asistencia_confirmada` (campo muerto, la confirmación real vive en `inscripciones.confirmacion`). `estado` **se mantiene**: hoy incluye `anulado` y es la base del veto (RN-07/RN-08, RN-18/RN-19), ya no se va a mover a `inscripciones`. `consulta` → `consultas` queda pendiente, fuera de alcance del issue #48. |
+| Quitar de `puestos` | ✅ `estado` y `feriante_id` (la ocupación se deduce de `inscripciones`). Se agregó `habilitado`. |
 | Nuevas tablas | `eventos`, `inscripciones`, `sanciones` y `consultas`. |
 | Datos existentes | Los feriantes con puesto se migran como inscripciones a un evento inicial creado por seeder. |
