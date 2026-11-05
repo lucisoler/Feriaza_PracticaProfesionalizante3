@@ -19,7 +19,10 @@
         <div v-if="abierto" class="fz-avisos-lista" role="menu">
           <p v-if="avisos.length === 0" class="fz-secundario" style="margin: 0; padding: 0.75rem">Sin avisos nuevos.</p>
           <div v-for="a in avisos" :key="a.id" class="fz-avisos-item">
-            <p style="margin: 0">{{ a.mensaje }}</p>
+            <div>
+              <p style="margin: 0">{{ a.mensaje }}</p>
+              <p class="fz-secundario" style="margin: 0.2rem 0 0; font-size: 0.78rem">{{ formatoAviso(a.created_at) }}</p>
+            </div>
             <button type="button" class="fz-enlace" @click="marcarLeido(a)">Visto</button>
           </div>
         </div>
@@ -52,6 +55,11 @@ const abierto = ref(false)
 
 function marcarLeido(aviso) {
   router.patch(`/coordinador/avisos/${aviso.id}/leido`, {}, { preserveScroll: true, preserveState: true })
+}
+
+const formatoHoraAviso = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+function formatoAviso(fechaHora) {
+  return formatoHoraAviso.format(new Date(fechaHora))
 }
 
 // Para que un aviso nuevo (ej.: un feriante cedió su lugar) aparezca sin recargar la página
