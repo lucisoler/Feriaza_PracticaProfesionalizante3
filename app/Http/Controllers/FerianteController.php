@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
-use App\Models\Feriante;
+use App\Services\FerianteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +12,8 @@ use Inertia\Response;
 
 class FerianteController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     // Formulario de registro con email y contraseña (RF-01)
     public function create(): Response|RedirectResponse
     {
@@ -31,7 +33,7 @@ class FerianteController extends Controller
             ...self::reglasDelPerfil(),
         ]);
 
-        $feriante = Feriante::create($data);
+        $feriante = $this->ferianteService->registrar($data);
 
         // Queda con la sesión iniciada para seguir directo con la inscripción a un evento
         Auth::guard('feriante')->login($feriante);
@@ -49,7 +51,7 @@ class FerianteController extends Controller
             'apellido' => 'required|string|max:100',
             'nombre_emprendimiento' => 'nullable|string|max:150',
             'categoria_id' => 'required|exists:categorias,id',
-            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
             'telefono' => 'required|string|max:20',
             'instagram' => 'nullable|string|max:100',
             'facebook' => 'nullable|string|max:100',

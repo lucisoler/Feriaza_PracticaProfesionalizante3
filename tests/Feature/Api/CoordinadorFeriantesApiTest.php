@@ -8,8 +8,10 @@ use App\Models\Feriante;
 use App\Models\Inscripcion;
 use App\Models\Sancion;
 use App\Models\User;
+use App\Notifications\CuentaAnulada;
 use Database\Seeders\CategoriaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -73,6 +75,37 @@ class CoordinadorFeriantesApiTest extends TestCase
         $this->patchJson("/api/v1/coordinador/feriantes/{$feriante->id}", ['estado' => 'aprobado'])
             ->assertOk()
             ->assertJsonPath('data.estado', 'aprobado');
+    }
+
+    public function test_anular_por_la_api_libera_las_mesas_y_avisa_por_correo(): void
+    {
+        Notification::fake();
+        $feriante = Feriante::factory()->create();
+        Inscripcion::create([
+            'evento_id' => $this->evento('abierto')->id,
+            'fecha' => today(),
+            'feriante_id' => $feriante->id,
+            'reglamento_aceptado_at' => now(),
+        ]);
+
+        $this->patchJson("/api/v1/coordinador/feriantes/{$feriante->id}", [
+            'estado' => 'anulado',
+            'motivo_anulacion' => 'Inasistencia reiterada',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.estado', 'anulado');
+
+        $this->assertDatabaseCount('inscripciones', 0);
+        Notification::assertSentTo($feriante, CuentaAnulada::class);
+    }
+
+    public function test_anular_por_la_api_exige_motivo(): void
+    {
+        $feriante = Feriante::factory()->create();
+
+        $this->patchJson("/api/v1/coordinador/feriantes/{$feriante->id}", ['estado' => 'anulado'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('motivo_anulacion');
     }
 
     public function test_feriante_inexistente_responde_404(): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feriante;
+use App\Services\FerianteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,11 +24,13 @@ class CuentaSocialController extends Controller
 {
     private const CLAVE_SESION = 'registro_social';
 
+    public function __construct(private FerianteService $ferianteService) {}
+
     public function redirect(string $proveedor): RedirectResponse
     {
         if (! config("services.{$proveedor}.client_id")) {
             return redirect('/')->withErrors([
-                'social' => 'El acceso con ' . Str::ucfirst($proveedor) . ' todavía no está configurado. Usá tu email y contraseña.',
+                'social' => 'El acceso con '.Str::ucfirst($proveedor).' todavía no está configurado. Usá tu email y contraseña.',
             ]);
         }
 
@@ -40,7 +43,7 @@ class CuentaSocialController extends Controller
             $usuario = Socialite::driver($proveedor)->user();
         } catch (Throwable) {
             return redirect('/')->withErrors([
-                'social' => 'No pudimos conectar con ' . Str::ucfirst($proveedor) . '. Probá de nuevo.',
+                'social' => 'No pudimos conectar con '.Str::ucfirst($proveedor).'. Probá de nuevo.',
             ]);
         }
 
@@ -107,7 +110,7 @@ class CuentaSocialController extends Controller
             ...FerianteController::reglasDelPerfil(),
         ]);
 
-        $feriante = Feriante::create([
+        $feriante = $this->ferianteService->registrar([
             ...$data,
             'email' => $social['email'] ?? $data['email'],
             'proveedor' => $social['proveedor'],

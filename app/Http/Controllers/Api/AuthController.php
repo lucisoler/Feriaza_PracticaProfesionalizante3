@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Feriante;
 use App\Models\User;
+use App\Services\FerianteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class AuthController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     // POST /api/v1/feriantes/registro (RF-01, RF-02)
     public function registro(Request $request): JsonResponse
     {
@@ -28,14 +31,13 @@ class AuthController extends Controller
             'telefono' => 'required|string|max:20',
             'nombre_emprendimiento' => 'nullable|string|max:150',
             'categoria_id' => 'required|exists:categorias,id',
-            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
             'instagram' => 'nullable|string|max:100',
             'facebook' => 'nullable|string|max:100',
             'tiktok' => 'nullable|string|max:100',
         ]);
 
-        // La contraseña se hashea sola por el cast 'hashed' del modelo
-        $feriante = Feriante::create($data);
+        $feriante = $this->ferianteService->registrar($data);
         $token = $feriante->createToken('feriante', ['feriante'])->plainTextToken;
 
         return response()->json([

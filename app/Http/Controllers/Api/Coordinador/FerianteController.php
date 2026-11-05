@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api\Coordinador;
 
+use App\Exceptions\FerianteConEventosAbiertosException;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Feriante;
+use App\Services\FerianteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,6 +17,8 @@ use Illuminate\Validation\Rule;
  */
 class FerianteController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     // GET /api/v1/coordinador/feriantes?q=texto: busca por nombre, apellido, email o emprendimiento
     public function index(Request $request): JsonResponse
     {
@@ -40,7 +44,7 @@ class FerianteController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $this->validarDatos($request, null);
-        $feriante = Feriante::create($data);
+        $feriante = $this->ferianteService->registrar($data);
 
         return response()->json(['data' => $feriante->fresh()], 201);
     }
@@ -56,11 +60,7 @@ class FerianteController extends Controller
     {
         $data = $this->validarDatos($request, $feriante->id, parcial: true);
 
-        if (empty($data['password'])) {
-            unset($data['password']);
-        }
-
-        $feriante->update($data);
+        $this->ferianteService->actualizar($feriante, $data);
 
         return response()->json(['data' => $feriante->fresh()]);
     }
@@ -68,18 +68,11 @@ class FerianteController extends Controller
     // DELETE /api/v1/coordinador/feriantes/{feriante}: 409 si tiene inscripciones en eventos abiertos
     public function destroy(Feriante $feriante): JsonResponse
     {
-        $tieneEventosAbiertos = $feriante->inscripciones()
-            ->whereHas('evento', fn ($evento) => $evento->where('estado', 'abierto'))
-            ->exists();
-
-        if ($tieneEventosAbiertos) {
-            return response()->json([
-                'message' => 'No se puede eliminar: el feriante tiene inscripciones en eventos abiertos.',
-            ], 409);
+        try {
+            $this->ferianteService->eliminar($feriante);
+        } catch (FerianteConEventosAbiertosException $e) {
+            return response()->json(['message' => $e->getMessage()], 409);
         }
-
-        $feriante->tokens()->delete();
-        $feriante->delete();
 
         return response()->json(['message' => 'Feriante eliminado.']);
     }
@@ -122,6 +115,10 @@ class FerianteController extends Controller
             'facebook' => 'sometimes|nullable|string|max:100',
             'tiktok' => 'sometimes|nullable|string|max:100',
             'estado' => 'sometimes|in:pendiente,aprobado,rechazado,anulado',
+            // Inasistencia, falta de pago u otra falta que evaluó el coordinador (RN-18, RN-19)
+            'motivo_anulacion' => 'nullable|required_if:estado,anulado|string|max:255',
+        ], [
+            'motivo_anulacion.required_if' => 'Indicá el motivo de la anulación.',
         ]);
     }
 }

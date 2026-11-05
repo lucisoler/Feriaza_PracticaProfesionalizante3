@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Categoria;
 use App\Models\Feriante;
+use App\Services\FerianteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class MiCuentaController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     public function show(): Response
     {
         $feriante = Auth::guard('feriante')->user();
@@ -71,11 +74,7 @@ class MiCuentaController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        if (empty($data['password'])) {
-            unset($data['password']);
-        }
-
-        $feriante->update($data);
+        $this->ferianteService->actualizar($feriante, $data);
 
         return back()->with('success', 'Tus datos fueron actualizados.');
 
@@ -90,7 +89,7 @@ class MiCuentaController extends Controller
         }
 
         Auth::guard('feriante')->logout();
-        $feriante->delete();
+        $this->ferianteService->eliminarCuentaPropia($feriante);
         $request->session()->invalidate();
 
         return redirect('/')->with('success', 'Tu inscripción fue cancelada.');

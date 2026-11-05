@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Categoria;
+use App\Models\Evento;
 use App\Models\Feriante;
+use App\Models\Inscripcion;
 use App\Models\User;
 use Database\Seeders\CategoriaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,5 +84,30 @@ class PanelCoordinadorTest extends TestCase
             ->assertRedirect('/coordinador');
 
         $this->assertModelMissing($feriante);
+    }
+
+    public function test_no_se_elimina_un_feriante_con_eventos_abiertos(): void
+    {
+        $feriante = Feriante::factory()->create();
+        $evento = Evento::create([
+            'nombre' => 'Feria de prueba',
+            'fecha_inicio' => '2026-11-07',
+            'fecha_fin' => '2026-11-08',
+            'hora_inicio' => '17:00',
+            'estado' => 'abierto',
+        ]);
+        Inscripcion::create([
+            'evento_id' => $evento->id,
+            'feriante_id' => $feriante->id,
+            'reglamento_aceptado_at' => now(),
+        ]);
+
+        $this->actingAs($this->coordinador)
+            ->from('/coordinador')
+            ->delete("/coordinador/feriantes/{$feriante->id}")
+            ->assertRedirect('/coordinador')
+            ->assertSessionHasErrors('feriante');
+
+        $this->assertModelExists($feriante);
     }
 }
