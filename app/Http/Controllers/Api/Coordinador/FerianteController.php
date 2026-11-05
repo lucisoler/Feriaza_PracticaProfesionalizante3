@@ -20,7 +20,7 @@ class FerianteController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
 
-        $feriantes = Feriante::with('puesto')
+        $feriantes = Feriante::query()
             ->when($q !== '', function ($consulta) use ($q) {
                 $consulta->where(function ($sub) use ($q) {
                     $sub->where('nombre', 'like', "%{$q}%")
@@ -48,7 +48,7 @@ class FerianteController extends Controller
     // GET /api/v1/coordinador/feriantes/{feriante}
     public function show(Feriante $feriante): JsonResponse
     {
-        return response()->json(['data' => $feriante->load('puesto')]);
+        return response()->json(['data' => $feriante]);
     }
 
     // PATCH /api/v1/coordinador/feriantes/{feriante}: solo se modifican los campos que se envían
@@ -62,7 +62,7 @@ class FerianteController extends Controller
 
         $feriante->update($data);
 
-        return response()->json(['data' => $feriante->fresh()->load('puesto')]);
+        return response()->json(['data' => $feriante->fresh()]);
     }
 
     // DELETE /api/v1/coordinador/feriantes/{feriante}: 409 si tiene inscripciones en eventos abiertos
@@ -77,12 +77,6 @@ class FerianteController extends Controller
                 'message' => 'No se puede eliminar: el feriante tiene inscripciones en eventos abiertos.',
             ], 409);
         }
-
-        // Libera la mesa del flujo actual antes de borrar
-        $feriante->puesto?->update([
-            'estado' => 'libre',
-            'feriante_id' => null,
-        ]);
 
         $feriante->tokens()->delete();
         $feriante->delete();
@@ -123,7 +117,7 @@ class FerianteController extends Controller
             'telefono' => "{$req}|string|max:20",
             'nombre_emprendimiento' => 'sometimes|nullable|string|max:150',
             'categoria_id' => "{$req}|exists:categorias,id",
-            'rubro_otro' => 'nullable|required_if:categoria_id,' . Categoria::idOtro() . '|string|max:100',
+            'rubro_otro' => 'nullable|required_if:categoria_id,'.Categoria::idOtro().'|string|max:100',
             'instagram' => 'sometimes|nullable|string|max:100',
             'facebook' => 'sometimes|nullable|string|max:100',
             'tiktok' => 'sometimes|nullable|string|max:100',

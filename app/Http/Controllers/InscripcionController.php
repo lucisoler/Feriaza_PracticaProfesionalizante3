@@ -10,6 +10,7 @@ use App\Models\Lugar;
 use App\Models\Puesto;
 use App\Models\User;
 use App\Notifications\NuevaInscripcion;
+use App\Notifications\ReconfirmacionRecibida;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ use Throwable;
  * Inscripción del feriante a un evento: elige evento, día y una mesa de la
  * sección de su categoría en el plano del lugar (RF-06, RF-07; RN-03, RN-09).
  * Se abre dos semanas antes del evento y el puesto se reconfirma 72 horas
- * antes, eligiendo el medio de pago (RN-15, RN-16).
+ * antes (RN-15, RN-16).
  */
 class InscripcionController extends Controller
 {
@@ -34,6 +35,9 @@ class InscripcionController extends Controller
 
         if ($feriante->estaAnulado()) {
             return redirect('/mi-cuenta')->withErrors(['inscripcion' => 'Tu cuenta está anulada: no podés inscribirte a nuevos eventos.']);
+        }
+        if ($feriante->estaVetado()) {
+            return redirect('/mi-cuenta')->withErrors(['inscripcion' => "Estás vedado por inasistencia ({$feriante->vetado_motivo}): todavía no podés inscribirte a nuevos eventos."]);
         }
 
         // Solo eventos abiertos, con al menos un día por delante y cuya inscripción ya se abrió (RN-15)
@@ -89,6 +93,9 @@ class InscripcionController extends Controller
         if ($feriante->estaAnulado()) {
             throw ValidationException::withMessages(['evento_id' => 'Tu cuenta está anulada: no podés inscribirte a nuevos eventos.']);
         }
+        if ($feriante->estaVetado()) {
+            throw ValidationException::withMessages(['evento_id' => "Estás vedado por inasistencia ({$feriante->vetado_motivo}): todavía no podés inscribirte a nuevos eventos."]);
+        }
         if (! $evento->estaAbierto()) {
             throw ValidationException::withMessages(['evento_id' => 'Ese evento no tiene la inscripción abierta.']);
         }
@@ -129,6 +136,14 @@ class InscripcionController extends Controller
         });
 
         $inscripcion->load('evento.lugar', 'puesto', 'feriante.categoria');
+
+        // Aviso en el panel del coordinador: quién se inscribió y para cuándo.
+        $evento = $inscripcion->evento;
+        $mesa = $inscripcion->puesto ? " Mesa N° {$inscripcion->puesto->numero}." : '';
+
+        Aviso::create([
+            'mensaje' => "{$inscripcion->feriante->nombre} {$inscripcion->feriante->apellido} se inscribió a {$evento->nombre} el {$inscripcion->fecha->format('d/m')} en {$evento->lugar->nombre}.{$mesa}",
+        ]);
 
         // Aviso por correo a los coordinadores (RF-15). Si el correo falla, la inscripción igual queda hecha.
         try {
@@ -178,16 +193,10 @@ class InscripcionController extends Controller
         return back()->with('success', 'Cediste tu lugar y avisamos al coordinador.');
     }
 
-    /** Reconfirmación del puesto 72 horas antes, eligiendo cómo va a pagar la mesa (RN-16). */
-    public function reconfirmar(Request $request, int $id): RedirectResponse
+    /** Reconfirmación del puesto 72 horas antes del día que le toca (RN-16). */
+    public function reconfirmar(int $id): RedirectResponse
     {
-        $inscripcion = $this->feriante()->inscripciones()->with('evento')->findOrFail($id);
-
-        $data = $request->validate([
-            'medio_pago' => 'required|in:efectivo,debito',
-        ], [
-            'medio_pago.required' => 'Elegí cómo vas a pagar la mesa.',
-        ]);
+        $inscripcion = $this->feriante()->inscripciones()->with('evento.lugar', 'feriante')->findOrFail($id);
 
         if ($inscripcion->confirmacion !== 'sin_confirmar') {
             return back()->withErrors(['inscripcion' => 'Esa inscripción ya fue reconfirmada.']);
@@ -201,8 +210,13 @@ class InscripcionController extends Controller
         $inscripcion->update([
             'confirmacion' => 'confirmada',
             'reconfirmada_at' => now(),
-            'medio_pago' => $data['medio_pago'],
         ]);
+
+        try {
+            $inscripcion->feriante->notify(new ReconfirmacionRecibida($inscripcion));
+        } catch (Throwable $e) {
+            report($e);
+        }
 
         return back()->with('success', 'Reconfirmaste tu puesto. ¡Te esperamos!');
     }

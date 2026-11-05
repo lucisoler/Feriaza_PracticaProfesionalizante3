@@ -5,6 +5,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,13 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Habilidades de los tokens de Sanctum: 'feriante' o 'coordinador'
         $middleware->alias([
-            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
-            'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+            'abilities' => CheckAbilities::class,
+            'ability' => CheckForAnyAbility::class,
         ]);
 
         // Si alguien sin sesión entra a una página privada, va al login que corresponde
-        $middleware->redirectGuestsTo(fn (Request $request) =>
-            $request->is('mi-cuenta*') ? '/mi-cuenta/login' : '/login'
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('mi-cuenta*') ? '/mi-cuenta/login' : '/login'
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

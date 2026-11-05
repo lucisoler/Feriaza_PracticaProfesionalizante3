@@ -15,13 +15,12 @@ class Inscripcion extends Model
 
     protected $fillable = [
         'evento_id', 'feriante_id', 'puesto_id', 'fecha',
-        'estado', 'confirmacion', 'reconfirmada_at', 'medio_pago', 'pagado_at', 'asistencia',
+        'estado', 'confirmacion', 'reconfirmada_at', 'asistencia',
         'presente_at', 'reglamento_aceptado_at', 'recordatorio_reconfirmacion_enviado_at',
     ];
 
     protected $casts = [
         'reconfirmada_at' => 'datetime',
-        'pagado_at' => 'datetime',
         'presente_at' => 'datetime',
         'reglamento_aceptado_at' => 'datetime',
         'recordatorio_reconfirmacion_enviado_at' => 'datetime',
@@ -65,6 +64,19 @@ class Inscripcion extends Model
     {
         return $this->confirmacion === 'sin_confirmar'
             && now()->between($this->aperturaReconfirmacion(), $this->inicio());
+    }
+
+    /** Fin de la hora de tolerancia para presentarse (RN-07). */
+    public function finTolerancia(): Carbon
+    {
+        return $this->inicio()->addHours(config('feria.horas_tolerancia'));
+    }
+
+    /** Solo se marca presente desde que empieza la feria y durante la tolerancia (RF-11). */
+    public function puedeMarcarsePresente(): bool
+    {
+        return $this->asistencia === 'pendiente'
+            && now()->between($this->inicio(), $this->finTolerancia());
     }
 
     /** Ya se abrió la reconfirmación y todavía no se le avisó al feriante por correo. */

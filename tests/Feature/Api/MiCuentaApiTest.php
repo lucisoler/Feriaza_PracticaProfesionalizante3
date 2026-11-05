@@ -3,7 +3,6 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Feriante;
-use App\Models\Puesto;
 use Database\Seeders\CategoriaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -53,13 +52,10 @@ class MiCuentaApiTest extends TestCase
             ->assertJsonValidationErrors('email');
     }
 
-    public function test_la_baja_libera_la_mesa(): void
+    public function test_la_baja_elimina_la_cuenta(): void
     {
-        $puesto = Puesto::create(['numero' => 2, 'estado' => 'reservado', 'feriante_id' => $this->feriante->id]);
-
         $this->deleteJson('/api/v1/mi-cuenta')->assertOk();
 
         $this->assertModelMissing($this->feriante);
-        $this->assertSame('libre', $puesto->fresh()->estado);
     }
 }

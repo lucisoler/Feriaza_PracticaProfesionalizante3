@@ -31,7 +31,6 @@ class PuestoSeeder extends Seeder
                         'lugar_id' => $lugar->id,
                         'seccion_id' => $seccion->id,
                         'numero' => $lugar->siguienteNumero(),
-                        'estado' => 'libre',
                     ] + $punto);
                 }
             }

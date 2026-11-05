@@ -47,7 +47,8 @@ class InscripcionSeeder extends Seeder
                     [
                         'puesto_id' => $puestoId,
                         'estado' => 'aprobada',
-                        'confirmacion' => $feriante->asistencia_confirmada ? 'confirmada' : 'sin_confirmar',
+                        // Variedad de datos de prueba: 1 de cada 3 todavía no reconfirmó
+                        'confirmacion' => $feriante->id % 3 !== 0 ? 'confirmada' : 'sin_confirmar',
                         'reglamento_aceptado_at' => now(),
                     ]
                 );

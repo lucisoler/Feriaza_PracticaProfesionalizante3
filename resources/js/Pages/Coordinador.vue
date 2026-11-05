@@ -28,7 +28,6 @@
               <tr>
                 <th>Nombre</th>
                 <th>Categoría</th>
-                <th>Mesa</th>
                 <th>Teléfono</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -43,7 +42,6 @@
                     <span v-if="f.rubro_otro" class="fz-secundario">({{ f.rubro_otro }})</span>
                   </span>
                 </td>
-                <td data-etiqueta="Mesa">{{ f.puesto?.numero ?? '-' }}</td>
                 <td data-etiqueta="Teléfono">{{ f.telefono }}</td>
                 <td data-etiqueta="Estado">
                   <span class="fz-estado" :class="`fz-estado-${f.estado}`" :title="f.motivo_anulacion ?? ''">{{ f.estado }}</span>
@@ -59,7 +57,7 @@
                 </td>
               </tr>
               <tr v-if="filtrados.length === 0">
-                <td colspan="6" class="fz-tabla-vacia">
+                <td colspan="5" class="fz-tabla-vacia">
                   {{ busqueda ? 'Ningún feriante coincide con la búsqueda.' : 'Todavía no hay feriantes inscriptos.' }}
                 </td>
               </tr>

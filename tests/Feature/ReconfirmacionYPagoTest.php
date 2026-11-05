@@ -8,6 +8,8 @@ use App\Models\Feriante;
 use App\Models\Inscripcion;
 use App\Models\Lugar;
 use App\Models\User;
+use App\Notifications\CuentaAnulada;
+use App\Notifications\ReconfirmacionRecibida;
 use App\Notifications\RecordatorioReconfirmacion;
 use Database\Seeders\CategoriaSeeder;
 use Database\Seeders\LugarSeeder;
@@ -97,29 +99,26 @@ class ReconfirmacionYPagoTest extends TestCase
         $this->travelTo(Carbon::parse('2026-11-17 16:59'));
 
         $this->actingAs($this->feriante, 'feriante')
-            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar", ['medio_pago' => 'efectivo'])
+            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar")
             ->assertSessionHasErrors('inscripcion');
 
         $this->assertSame('sin_confirmar', $inscripcion->fresh()->confirmacion);
     }
 
-    public function test_reconfirma_el_puesto_eligiendo_el_medio_de_pago(): void
+    public function test_reconfirma_el_puesto_y_avisa_por_correo(): void
     {
+        Notification::fake();
         $inscripcion = $this->inscripcion();
         $this->travelTo(Carbon::parse('2026-11-17 17:00'));
 
         $this->actingAs($this->feriante, 'feriante')
-            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar", [])
-            ->assertSessionHasErrors('medio_pago');
-
-        $this->actingAs($this->feriante, 'feriante')
-            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar", ['medio_pago' => 'debito'])
+            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar")
             ->assertSessionHas('success');
 
         $inscripcion->refresh();
         $this->assertSame('confirmada', $inscripcion->confirmacion);
-        $this->assertSame('debito', $inscripcion->medio_pago);
         $this->assertNotNull($inscripcion->reconfirmada_at);
+        Notification::assertSentTo($this->feriante, ReconfirmacionRecibida::class);
     }
 
     public function test_avisa_por_correo_cuando_se_abre_la_reconfirmacion(): void
@@ -148,7 +147,7 @@ class ReconfirmacionYPagoTest extends TestCase
     {
         Notification::fake();
         $inscripcion = $this->inscripcion();
-        $inscripcion->update(['confirmacion' => 'confirmada', 'reconfirmada_at' => now(), 'medio_pago' => 'efectivo']);
+        $inscripcion->update(['confirmacion' => 'confirmada', 'reconfirmada_at' => now()]);
 
         $this->travelTo(Carbon::parse('2026-11-17 17:00'));
         $this->artisan('feria:recordar-reconfirmacion');
@@ -162,14 +161,13 @@ class ReconfirmacionYPagoTest extends TestCase
         $this->travelTo(Carbon::parse('2026-11-20 17:01'));
 
         $this->actingAs($this->feriante, 'feriante')
-            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar", ['medio_pago' => 'efectivo'])
+            ->patch("/mi-cuenta/inscripciones/{$inscripcion->id}/reconfirmar")
             ->assertSessionHasErrors('inscripcion');
     }
 
-    public function test_el_coordinador_fija_el_dia_de_pago_y_registra_el_pago(): void
+    public function test_el_coordinador_marca_evento_grande_al_crear_o_editar(): void
     {
         $coordinador = User::factory()->create();
-        $inscripcion = $this->inscripcion();
 
         $this->actingAs($coordinador)->patch("/coordinador/eventos/{$this->evento->id}", [
             'nombre' => $this->evento->nombre,
@@ -177,22 +175,16 @@ class ReconfirmacionYPagoTest extends TestCase
             'fecha_inicio' => '2026-11-20',
             'fecha_fin' => '2026-11-20',
             'hora_inicio' => '17:00',
-            'pago_fecha' => '2026-11-20',
-            'pago_hora' => '15:30',
             'estado' => 'abierto',
+            'grande' => true,
         ])->assertSessionHasNoErrors();
 
-        $this->assertSame('2026-11-20', $this->evento->fresh()->pago_fecha->toDateString());
-
-        $this->actingAs($coordinador)
-            ->patch("/coordinador/inscripciones/{$inscripcion->id}/pago", ['pagado' => true])
-            ->assertSessionHasNoErrors();
-
-        $this->assertNotNull($inscripcion->fresh()->pagado_at);
+        $this->assertTrue($this->evento->fresh()->grande);
     }
 
-    public function test_el_coordinador_anula_la_cuenta_con_un_motivo_y_se_liberan_sus_reservas(): void
+    public function test_el_coordinador_anula_la_cuenta_con_un_motivo_y_avisa_por_correo(): void
     {
+        Notification::fake();
         $coordinador = User::factory()->create();
         $this->inscripcion();
 
@@ -211,30 +203,7 @@ class ReconfirmacionYPagoTest extends TestCase
         $this->assertTrue($this->feriante->estaAnulado());
         $this->assertSame('Inasistencia el 20/11', $this->feriante->motivo_anulacion);
         $this->assertDatabaseCount('inscripciones', 0);
-    }
-
-    public function test_libera_las_mesas_sin_pago_cuando_termina_el_dia(): void
-    {
-        $sinPagar = $this->inscripcion();
-        $pagada = Inscripcion::create([
-            'evento_id' => $this->evento->id,
-            'feriante_id' => Feriante::factory()->create(['categoria_id' => $this->feriante->categoria_id])->id,
-            'fecha' => '2026-11-20',
-            'pagado_at' => now(),
-            'reglamento_aceptado_at' => now(),
-        ]);
-
-        // El día de feria todavía no terminó: no se toca nada
-        $this->travelTo(Carbon::parse('2026-11-20 20:00'));
-        $this->artisan('feria:liberar-mesas-sin-pago');
-        $this->assertModelExists($sinPagar);
-
-        // Al día siguiente, se libera la que no pagó; la que sí pagó queda
-        $this->travelTo(Carbon::parse('2026-11-21 08:00'));
-        $this->artisan('feria:liberar-mesas-sin-pago');
-
-        $this->assertModelMissing($sinPagar);
-        $this->assertModelExists($pagada);
+        Notification::assertSentTo($this->feriante, CuentaAnulada::class);
     }
 
     public function test_el_feriante_cede_su_lugar_el_mismo_dia_y_avisa_al_coordinador(): void
