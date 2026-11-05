@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
+use App\Services\FerianteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,8 @@ use Illuminate\Validation\Rule;
  */
 class MiCuentaController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     // GET /api/v1/mi-cuenta
     public function show(Request $request): JsonResponse
     {
@@ -38,22 +41,15 @@ class MiCuentaController extends Controller
             'password' => 'sometimes|nullable|string|min:8|confirmed',
         ]);
 
-        if (empty($data['password'])) {
-            unset($data['password']);
-        }
-
-        $feriante->update($data);
+        $this->ferianteService->actualizar($feriante, $data);
 
         return response()->json(['data' => $feriante->fresh()]);
     }
 
-    // DELETE /api/v1/mi-cuenta: baja del feriante; libera su mesa y revoca todos sus tokens
+    // DELETE /api/v1/mi-cuenta: baja del feriante; revoca todos sus tokens
     public function destroy(Request $request): JsonResponse
     {
-        $feriante = $request->user();
-
-        $feriante->tokens()->delete();
-        $feriante->delete();
+        $this->ferianteService->eliminarCuentaPropia($request->user());
 
         return response()->json(['message' => 'Tu cuenta fue dada de baja.']);
     }

@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\FerianteConEventosAbiertosException;
 use App\Models\Categoria;
 use App\Models\Feriante;
-use App\Notifications\CuentaAnulada;
+use App\Services\FerianteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Throwable;
 
 class CoordinadorFerianteController extends Controller
 {
+    public function __construct(private FerianteService $ferianteService) {}
+
     public function create(): Response
     {
 
@@ -27,7 +29,7 @@ class CoordinadorFerianteController extends Controller
     {
         $data = $this->validarDatos($request, null);
 
-        Feriante::create($data);
+        $this->ferianteService->registrar($data);
 
         return redirect('/coordinador')->with('success', 'Feriante creado.');
     }
@@ -48,11 +50,7 @@ class CoordinadorFerianteController extends Controller
         $feriante = Feriante::findOrFail($id);
         $data = $this->validarDatos($request, $feriante->id);
 
-        if (empty($data['password'])) {
-            unset($data['password']);
-        }
-
-        $feriante->update($data);
+        $this->ferianteService->actualizar($feriante, $data);
 
         return redirect('/coordinador')->with('success', 'Feriante actualizado.');
 
@@ -71,22 +69,7 @@ class CoordinadorFerianteController extends Controller
 
         $feriante = Feriante::findOrFail($id);
 
-        if ($data['estado'] !== 'anulado') {
-            $data['motivo_anulacion'] = null;
-        }
-
-        $feriante->update($data);
-
-        if ($feriante->estaAnulado()) {
-            // Una cuenta anulada no conserva mesas: se liberan sus reservas de hoy en adelante
-            $feriante->inscripciones()->whereDate('fecha', '>=', today())->delete();
-
-            try {
-                $feriante->notify(new CuentaAnulada($feriante));
-            } catch (Throwable $e) {
-                report($e);
-            }
-        }
+        $this->ferianteService->actualizar($feriante, $data);
 
         return back();
 
@@ -97,7 +80,11 @@ class CoordinadorFerianteController extends Controller
 
         $feriante = Feriante::findOrFail($id);
 
-        $feriante->delete();
+        try {
+            $this->ferianteService->eliminar($feriante);
+        } catch (FerianteConEventosAbiertosException $e) {
+            return back()->withErrors(['feriante' => $e->getMessage()]);
+        }
 
         return back()->with('success', 'Feriante eliminado.');
 
