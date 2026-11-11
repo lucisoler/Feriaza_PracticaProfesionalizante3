@@ -1,0 +1,176 @@
+/* =====================================================================
+   Feriaza: ajustes de accesibilidad
+   Pensado para todo el público, de 16 a más de 60 años:
+   letra más grande, mejor contraste, botones fáciles de tocar
+   y foco visible para quien usa teclado.
+
+   Se importa ÚLTIMO en app.css. Está fuera de @layer a propósito,
+   para que tenga prioridad sobre feriaza.css y feriaza-panel.css.
+   Para volver al estilo anterior, basta con quitar su @import.
+   ===================================================================== */
+
+/* ---------- 1. Tamaño y lectura ---------- */
+
+/* 18 px de base (en vez de 16): todo lo medido en rem crece en proporción */
+html {
+    font-size: 112.5%;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Letra muy legible para el texto; Alegreya queda para títulos y marca */
+body {
+    font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+    line-height: 1.6;
+    color: var(--color-noche);
+}
+
+.fz-titulo {
+    font-size: 1.6rem;
+    line-height: 1.25;
+}
+
+.fz-subtitulo {
+    font-size: 1.3rem;
+}
+
+.fz-ayuda,
+.fz-secundario,
+.fz-opcional {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Gris más oscuro: se lee mejor con poca luz o vista cansada */
+.fz-ayuda,
+.fz-secundario,
+.fz-opcional,
+.fz-resumen dt,
+.fz-tabla th,
+.fz-tabla-vacia {
+    color: #45483b;
+}
+
+/* ---------- 2. Formularios ---------- */
+
+.fz-etiqueta {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.fz-input {
+    min-height: 3rem;              /* 54 px: fácil de tocar con el dedo */
+    font-size: 1rem;               /* 18 px: evita el zoom automático en el celular */
+    padding: 0.65rem 0.85rem;
+    border-width: 2px;
+    border-color: #8a8470;         /* borde bien visible sobre fondo claro */
+}
+
+textarea.fz-input {
+    min-height: 6rem;
+}
+
+.fz-input::placeholder {
+    color: #6b6656;
+    opacity: 1;
+}
+
+/* Los errores no dependen solo del color: llevan un símbolo y van en negrita */
+.fz-error {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-top: 0.35rem;
+}
+
+.fz-error::before {
+    content: "⚠ ";
+}
+
+.fz-input-error {
+    border-width: 3px;
+}
+
+/* ---------- 3. Botones y enlaces ---------- */
+
+.fz-boton,
+.fz-boton-secundario,
+.fz-boton-peligro {
+    min-height: 3.2rem;            /* unos 58 px de alto */
+    font-size: 1.05rem;
+    padding: 0.8rem 1.2rem;
+}
+
+.fz-boton-chico {
+    min-height: 2.75rem;
+    padding: 0.6rem 1rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Acciones del panel: más grandes y separadas para no tocar la equivocada */
+.fz-acciones-fila {
+    gap: 0.5rem;
+}
+
+.fz-accion {
+    min-height: 2.6rem;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.fz-estado {
+    font-size: 0.9rem;
+    padding: 0.15rem 0.65rem;
+}
+
+.fz-enlace,
+a {
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+/* ---------- 4. Foco visible (teclado y lectores de pantalla) ---------- */
+
+:focus-visible {
+    outline: 3px solid var(--color-quebracho);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+.fz-input:focus-visible {
+    outline-offset: 1px;
+}
+
+/* ---------- 5. Mensajes ---------- */
+
+.fz-aviso {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.85rem 1rem;
+    border-left-width: 6px;
+}
+
+/* ---------- 6. Tabla del panel ---------- */
+
+.fz-tabla {
+    font-size: 1rem;
+}
+
+.fz-tabla td {
+    padding: 0.8rem 0.75rem;
+}
+
+/* ---------- 7. Menos movimiento si la persona lo pidió en su sistema ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
