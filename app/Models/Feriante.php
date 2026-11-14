@@ -21,7 +21,7 @@ class Feriante extends Authenticatable
         'nombre_emprendimiento',
         'categoria_id', 'rubro_otro', 'telefono',
         'instagram', 'facebook', 'tiktok',
-        'consulta', 'estado', 'motivo_anulacion',
+        'consulta', 'estado', 'motivo_anulacion', 'anulado_at',
         'vetado_desde_evento_id', 'vetado_motivo', 'vetado_at',
     ];
 
@@ -31,6 +31,7 @@ class Feriante extends Authenticatable
 
     protected $casts = [
         'vetado_at' => 'datetime',
+        'anulado_at' => 'datetime',
         'password' => 'hashed', // Laravel la hashea sola al guardar
     ];
 
@@ -52,6 +53,15 @@ class Feriante extends Authenticatable
     public function estaAnulado(): bool
     {
         return $this->estado === 'anulado';
+    }
+
+    /**
+     * Eventos reales que tienen que pasar para desanular la cuenta: 3 si la última
+     * falta fue en un evento grande, 2 si fue en uno regular.
+     */
+    public function eventosParaDesanular(): int
+    {
+        return $this->vetado_desde_evento_id ? 3 : 2;
     }
 
     public function vetadoDesdeEvento(): BelongsTo

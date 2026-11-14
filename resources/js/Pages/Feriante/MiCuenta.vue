@@ -11,7 +11,31 @@
           <button type="button" class="fz-enlace" @click="cerrarSesion">Cerrar sesión</button>
         </div>
 
+        <!-- Consultas: por WhatsApp al coordinador -->
+        <div class="fz-caja">
+          <p class="fz-ayuda">Cualquier consulta comuniquese en el WhatsApp</p>
+          <a
+            v-if="whatsapp"
+            :href="`https://wa.me/${whatsapp}`"
+            target="_blank"
+            rel="noopener"
+            class="fz-boton"
+            style="display: inline-flex; align-items: center; gap: 0.5rem"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+            </svg>
+            WhatsApp
+          </a>
+        </div>
+
         <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
+
+        <!-- Cuenta nueva: el coordinador todavía no la revisó -->
+        <p v-if="feriante.estado === 'pendiente'" class="fz-aviso fz-caja">
+          Tu cuenta está <strong>pendiente de aprobación</strong>: el coordinador todavía no revisó tus datos.
+          Mientras tanto podés inscribirte a los eventos, pero cada inscripción quedará pendiente hasta que el coordinador la acepte.
+        </p>
 
         <p v-if="feriante.estado === 'anulado'" class="fz-error fz-caja">
           Tu cuenta fue anulada por el coordinador<template v-if="feriante.motivo_anulacion">: {{ feriante.motivo_anulacion }}</template>.
@@ -21,7 +45,7 @@
         <!-- Resumen de la inscripción -->
         <dl class="fz-resumen">
           <dt>Estado</dt>
-          <dd><span class="fz-estado" :class="`fz-estado-${feriante.estado}`">{{ feriante.estado }}</span></dd>
+          <dd><span class="fz-estado" :class="`fz-estado-${feriante.estado}`">{{ estadosFeriante[feriante.estado] ?? feriante.estado }}</span></dd>
           <dt>Categoría</dt>
           <dd>{{ feriante.categoria?.nombre ?? 'Sin categoría' }}</dd>
           <dt>Inscripciones</dt>
@@ -132,11 +156,6 @@
             <input v-model="form.tiktok" class="fz-input" />
           </label>
 
-          <label class="fz-campo">
-            <span class="fz-etiqueta">Consulta para el coordinador <span class="fz-opcional">(opcional)</span></span>
-            <textarea v-model="form.consulta" class="fz-input" rows="3"></textarea>
-          </label>
-
           <hr class="fz-separador" />
           <p class="fz-ayuda">Completá estos dos campos solo si querés cambiar tu contraseña.</p>
 
@@ -173,6 +192,7 @@ import { computed } from 'vue'
 import { Link, useForm, usePage, router } from '@inertiajs/vue3'
 import ReglamentoFeria from '../../Components/ReglamentoFeria.vue'
 import MarcaFeriaza from '../../Components/MarcaFeriaza.vue'
+import { pedirConfirmacion } from '../../dialogo.js'
 
 const props = defineProps({
   feriante: {
@@ -185,23 +205,47 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  // Número del coordinador para WhatsApp (sin "+"); null si no está configurado
+  whatsapp: {
+    type: String,
+    default: null,
+  },
 })
 
 const formatoFecha = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+
+const estadosFeriante = {
+  pendiente: 'Pendiente de aprobación',
+  aprobado: 'Aprobada',
+  rechazado: 'Rechazada',
+  anulado: 'Anulada',
+}
 
 function formatoDia(dia) {
   const texto = formatoFecha.format(new Date(`${dia}T00:00:00Z`))
   return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 
-function cancelar(inscripcion) {
-  if (confirm(`¿Cancelar tu inscripción a ${inscripcion.evento} del ${formatoDia(inscripcion.fecha).toLowerCase()}? Se libera tu mesa.`)) {
+async function cancelar(inscripcion) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Cancelar inscripción',
+    mensaje: `¿Cancelar tu inscripción a ${inscripcion.evento} del ${formatoDia(inscripcion.fecha).toLowerCase()}? Se libera tu mesa.`,
+    textoConfirmar: 'Cancelar inscripción',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete(`/mi-cuenta/inscripciones/${inscripcion.id}`, { preserveScroll: true })
   }
 }
 
-function cederLugar(inscripcion) {
-  if (confirm(`¿Desocupar tu mesa en ${inscripcion.evento} de hoy? Se libera al instante y avisamos al coordinador.`)) {
+async function cederLugar(inscripcion) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Desocupar mesa',
+    mensaje: `¿Desocupar tu mesa en ${inscripcion.evento} de hoy? Se libera al instante y avisamos al coordinador.`,
+    textoConfirmar: 'Desocupar',
+    peligro: true,
+  })
+  if (confirmado) {
     router.patch(`/mi-cuenta/inscripciones/${inscripcion.id}/ceder-lugar`, {}, { preserveScroll: true })
   }
 }
@@ -220,7 +264,6 @@ const form = useForm({
   instagram: props.feriante.instagram ?? '',
   facebook: props.feriante.facebook ?? '',
   tiktok: props.feriante.tiktok ?? '',
-  consulta: props.feriante.consulta ?? '',
   password: '',
   password_confirmation: '',
 })
@@ -241,8 +284,14 @@ function cerrarSesion() {
   router.post('/mi-cuenta/logout')
 }
 
-function cancelarInscripcion() {
-  if (confirm('¿Seguro que querés cancelar tu inscripción? Esta acción no se puede deshacer.')) {
+async function cancelarInscripcion() {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Darte de baja',
+    mensaje: 'Se borran tus datos y se liberan tus mesas. Esta acción no se puede deshacer.',
+    textoConfirmar: 'Darme de baja',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete('/mi-cuenta')
   }
 }

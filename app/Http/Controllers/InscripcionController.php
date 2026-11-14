@@ -123,10 +123,16 @@ class InscripcionController extends Controller
 
             $puesto = $recibeMesa ? $this->validarMesa($feriante, $evento, $data) : null;
 
+            // Número de llegada del día: el siguiente al último inscripto de ese día
+            $numero = (int) Inscripcion::where('evento_id', $evento->id)
+                ->whereDate('fecha', $data['fecha'])
+                ->max('numero') + 1;
+
             return Inscripcion::create([
                 'evento_id' => $evento->id,
                 'feriante_id' => $feriante->id,
                 'puesto_id' => $puesto?->id,
+                'numero' => $numero,
                 'fecha' => $data['fecha'],
                 'estado' => 'pendiente',
                 // Se confirma después, 72 horas antes del evento (RN-16)

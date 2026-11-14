@@ -73,6 +73,7 @@
 import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import PanelCabecera from '../Components/PanelCabecera.vue'
+import { pedirConfirmacion } from '../dialogo.js'
 
 const props = defineProps({
   feriantes: {
@@ -103,15 +104,28 @@ function cambiarEstado(id, estado) {
 }
 
 // Inasistencia, falta de pago u otra falta (términos y condiciones)
-function anular(feriante) {
-  const motivo = prompt(`Motivo de la anulación de la cuenta de ${feriante.nombre} ${feriante.apellido} (inasistencia, falta de pago u otra falta). Se liberan sus mesas reservadas.`)
-  if (motivo?.trim()) {
-    router.patch(`/coordinador/feriantes/${feriante.id}/estado`, { estado: 'anulado', motivo_anulacion: motivo.trim() }, { preserveScroll: true })
+async function anular(feriante) {
+  const motivo = await pedirConfirmacion({
+    titulo: 'Anular cuenta',
+    mensaje: `Se anula la cuenta de ${feriante.nombre} ${feriante.apellido} y se liberan sus mesas reservadas.`,
+    textoConfirmar: 'Anular cuenta',
+    peligro: true,
+    conCampo: true,
+    etiquetaCampo: 'Motivo (inasistencia, falta de pago u otra falta)',
+  })
+  if (motivo) {
+    router.patch(`/coordinador/feriantes/${feriante.id}/estado`, { estado: 'anulado', motivo_anulacion: motivo }, { preserveScroll: true })
   }
 }
 
-function eliminar(feriante) {
-  if (confirm(`¿Eliminar a ${feriante.nombre} ${feriante.apellido}? Se libera su mesa.`)) {
+async function eliminar(feriante) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Eliminar feriante',
+    mensaje: `¿Eliminar a ${feriante.nombre} ${feriante.apellido}? Se libera su mesa.`,
+    textoConfirmar: 'Eliminar',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete(`/coordinador/feriantes/${feriante.id}`, { preserveScroll: true })
   }
 }

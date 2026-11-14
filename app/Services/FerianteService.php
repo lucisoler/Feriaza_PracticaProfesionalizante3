@@ -27,8 +27,13 @@ class FerianteService
 
         $pasaAAnulado = ($data['estado'] ?? null) === 'anulado' && ! $feriante->estaAnulado();
 
+        if ($pasaAAnulado) {
+            $data['anulado_at'] = now();
+        }
+
         if (array_key_exists('estado', $data) && $data['estado'] !== 'anulado') {
             $data['motivo_anulacion'] = null;
+            $data['anulado_at'] = null;
         }
 
         $feriante->update($data);

@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    image: plaza-castelli:latest
+    container_name: plaza-castelli
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/storage/app/database.sqlite
+    ports:
+      - "${APP_PORT:-8089}:80"
+    volumes:
+      - app-storage:/app/storage/app
+
+volumes:
+  app-storage:

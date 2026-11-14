@@ -107,6 +107,7 @@
 import { ref } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import PanelCabecera from '../../Components/PanelCabecera.vue'
+import { pedirConfirmacion } from '../../dialogo.js'
 
 defineProps({
   eventos: { type: Array, default: () => [] },
@@ -144,8 +145,14 @@ function guardar() {
   else form.post('/coordinador/eventos', opciones)
 }
 
-function eliminar(e) {
-  if (confirm(`¿Eliminar el evento «${e.nombre}»?`)) {
+async function eliminar(e) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Eliminar evento',
+    mensaje: `¿Eliminar el evento «${e.nombre}»?`,
+    textoConfirmar: 'Eliminar',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete(`/coordinador/eventos/${e.id}`, { preserveScroll: true })
   }
 }
