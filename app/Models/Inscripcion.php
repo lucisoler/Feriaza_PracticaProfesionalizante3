@@ -14,7 +14,7 @@ class Inscripcion extends Model
     protected $table = 'inscripciones';
 
     protected $fillable = [
-        'evento_id', 'feriante_id', 'puesto_id', 'fecha',
+        'evento_id', 'feriante_id', 'puesto_id', 'numero', 'fecha',
         'estado', 'confirmacion', 'reconfirmada_at', 'asistencia',
         'presente_at', 'reglamento_aceptado_at', 'recordatorio_reconfirmacion_enviado_at',
     ];

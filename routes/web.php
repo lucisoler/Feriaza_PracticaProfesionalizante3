@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\CoordinadorFerianteController;
@@ -88,10 +89,16 @@ Route::middleware('auth')->prefix('coordinador')->group(function () {
     Route::get('/eventos', [EventoController::class, 'index']);
     Route::post('/eventos', [EventoController::class, 'store']);
     Route::get('/eventos/{evento}', [EventoController::class, 'show']);
+    // Planilla PDF de los feriantes inscriptos en un día (?dia=YYYY-MM-DD)
+    Route::get('/eventos/{evento}/planilla', [EventoController::class, 'planilla']);
     Route::patch('/eventos/{evento}', [EventoController::class, 'update']);
     Route::delete('/eventos/{evento}', [EventoController::class, 'destroy']);
+    // Panel de asistencia del día (separado de la aprobación de feriantes y de la gestión de eventos)
+    Route::get('/asistencia', [AsistenciaController::class, 'index']);
     // Lo marca el coordinador durante la hora de tolerancia (RN-07, RF-11)
     Route::patch('/inscripciones/{inscripcion}/presente', [EventoController::class, 'marcarPresente']);
+    // El coordinador acepta o rechaza la inscripción del feriante a ese evento
+    Route::patch('/inscripciones/{inscripcion}/estado', [EventoController::class, 'cambiarEstadoInscripcion']);
 
     // Diseño de la feria sobre el plano de cada lugar
     Route::get('/plano', [PlanoController::class, 'show']);

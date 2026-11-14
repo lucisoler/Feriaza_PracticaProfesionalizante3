@@ -49,6 +49,7 @@ class MiCuentaController extends Controller
         return Inertia::render('Feriante/MiCuenta', [
             'feriante' => $feriante,
             'inscripciones' => $inscripciones,
+            'whatsapp' => config('feria.whatsapp_coordinador'),
         ]);
     }
 

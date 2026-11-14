@@ -1,5 +1,11 @@
 <template>
-  <div class="fz-plano">
+  <div>
+    <div class="mb-2 flex gap-2" role="group" aria-label="Vista del lugar">
+      <button type="button" class="fz-boton-chico" :aria-pressed="vista === 'plano'" @click="vista = 'plano'">Plano</button>
+      <button type="button" class="fz-boton-chico" :aria-pressed="vista === 'satelite'" @click="vista = 'satelite'">Satélite</button>
+    </div>
+    <MapaSatelital v-if="vista === 'satelite'" :slug="lugar.slug" />
+    <div v-show="vista === 'plano'" class="fz-plano">
     <svg
       ref="svg"
       :viewBox="`0 0 ${lugar.ancho} ${lugar.alto}`"
@@ -81,6 +87,7 @@
         pointer-events="none"
       />
     </svg>
+    </div>
   </div>
 </template>
 
@@ -88,6 +95,7 @@
 import { computed, ref, watch } from 'vue'
 import PlazaCentralBase from './planos/PlazaCentralBase.vue'
 import PulmonVerdeBase from './planos/PulmonVerdeBase.vue'
+import MapaSatelital from './MapaSatelital.vue'
 
 const MESA_W = 26
 const MESA_H = 18
@@ -116,6 +124,8 @@ const emit = defineEmits(['elegir-mesa', 'elegir-seccion', 'agregar-mesa', 'move
 // Cada plano en la página necesita su propio id de patrón
 const idRayas = `fz-rayas-${Math.random().toString(36).slice(2, 8)}`
 const svg = ref(null)
+// Vista activa: el plano de mesas o el mapa satelital del lugar
+const vista = ref('plano')
 
 const base = computed(() => BASES[props.lugar.slug] ?? null)
 const ocupadosSet = computed(() => new Set(props.ocupados))

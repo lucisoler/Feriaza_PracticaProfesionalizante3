@@ -48,6 +48,7 @@ const items = [
   { clave: 'feriantes', texto: 'Feriantes', href: '/coordinador' },
   { clave: 'eventos', texto: 'Eventos', href: '/coordinador/eventos' },
   { clave: 'plano', texto: 'Plano de la feria', href: '/coordinador/plano' },
+  { clave: 'asistencia', texto: 'Asistencia', href: '/coordinador/asistencia' },
 ]
 
 const avisos = computed(() => usePage().props.avisos ?? [])

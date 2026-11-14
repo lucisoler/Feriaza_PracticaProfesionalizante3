@@ -165,6 +165,7 @@ import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import PanelCabecera from '../../Components/PanelCabecera.vue'
 import PlanoFeria from '../../Components/PlanoFeria.vue'
 import LeyendaPlano from '../../Components/LeyendaPlano.vue'
+import { pedirConfirmacion } from '../../dialogo.js'
 
 const props = defineProps({
   lugares: { type: Array, default: () => [] },
@@ -265,9 +266,15 @@ function completar() {
   router.post(`/coordinador/secciones/${seccionActivaId.value}/completar`, { cantidad: cantidad.value }, opciones)
 }
 
-function eliminarSeccion() {
+async function eliminarSeccion() {
   const s = seccionActiva.value
-  if (confirm(`¿Eliminar la sección «${s.nombre}» y sus ${mesasDe(s).length} mesas?`)) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Eliminar sección',
+    mensaje: `¿Eliminar la sección «${s.nombre}» y sus ${mesasDe(s).length} mesas?`,
+    textoConfirmar: 'Eliminar',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete(`/coordinador/secciones/${s.id}`, { ...opciones, onSuccess: deseleccionar })
   }
 }
@@ -292,8 +299,14 @@ function habilitar(p, habilitado) {
   router.patch(`/coordinador/puestos/${p.id}`, { habilitado }, opciones)
 }
 
-function eliminarMesa(p) {
-  if (confirm(`¿Eliminar la mesa N° ${p.numero}?`)) {
+async function eliminarMesa(p) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Eliminar mesa',
+    mensaje: `¿Eliminar la mesa N° ${p.numero}?`,
+    textoConfirmar: 'Eliminar',
+    peligro: true,
+  })
+  if (confirmado) {
     router.delete(`/coordinador/puestos/${p.id}`, { ...opciones, onSuccess: deseleccionar })
   }
 }

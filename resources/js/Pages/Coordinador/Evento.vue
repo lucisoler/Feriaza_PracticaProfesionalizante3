@@ -25,6 +25,13 @@
               class="fz-pestania" :class="{ 'fz-pestania-actual': d === dia }">{{ formatoDia(d) }}</Link>
           </nav>
 
+          <!-- Planilla PDF de los inscriptos del día que se está viendo -->
+          <a
+            :href="`/coordinador/eventos/${evento.id}/planilla?dia=${dia}`"
+            class="fz-boton-chico"
+            style="margin-bottom: 1rem; display: inline-block"
+          >Descargar planilla PDF ({{ formatoDia(dia).toLowerCase() }})</a>
+
           <!-- Mesas libres por sección -->
           <div class="fz-resumen-secciones">
             <div v-for="r in resumen" :key="r.seccion.id" class="fz-resumen-seccion" :style="{ '--chip': r.color }">
@@ -64,7 +71,7 @@
               <h2 class="fz-subtitulo" style="margin-top: 1.25rem">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
               <table class="fz-tabla fz-tabla-compacta">
                 <thead>
-                  <tr><th>Mesa</th><th>Feriante</th><th>Reconfirmó</th><th>Asistencia</th></tr>
+                  <tr><th>Mesa</th><th>Feriante</th><th>Inscripción</th><th>Reconfirmó</th><th>Asistencia</th></tr>
                 </thead>
                 <tbody>
                   <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
@@ -73,16 +80,21 @@
                       <span class="fz-punto" :style="{ background: colorCategoria(i.feriante.categoria_id) }"></span>
                       {{ i.feriante.nombre }} {{ i.feriante.apellido }}
                     </td>
+                    <td>
+                      <span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ estadosInscripcion[i.estado] ?? i.estado }}</span>
+                      <div class="fz-acciones-fila" style="margin-top: 0.3rem">
+                        <button v-if="i.estado !== 'aprobada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-aprobar" @click="cambiarEstado(i, 'aprobada')">Aceptar</button>
+                        <button v-if="i.estado !== 'rechazada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-rechazar" @click="cambiarEstado(i, 'rechazada')">Rechazar</button>
+                      </div>
+                    </td>
                     <td>{{ i.confirmacion === 'confirmada' ? 'Sí' : 'No' }}</td>
                     <td>
-                      <button v-if="i.puede_marcar_presente" type="button" class="fz-accion fz-accion-aprobar" @click="marcarPresente(i)">
-                        Marcar presente
-                      </button>
-                      <span v-else class="fz-estado" :class="`fz-estado-${i.asistencia}`">{{ asistencias[i.asistencia] ?? i.asistencia }}</span>
+                      <span class="fz-estado" :class="`fz-estado-${i.asistencia}`">{{ asistencias[i.asistencia] ?? i.asistencia }}</span>
+                      <Link href="/coordinador/asistencia" class="fz-enlace">Controlar</Link>
                     </td>
                   </tr>
                   <tr v-if="inscripciones.length === 0">
-                    <td colspan="4" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                    <td colspan="5" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
                   </tr>
                 </tbody>
               </table>
@@ -123,6 +135,12 @@ const inscripcionesOrdenadas = computed(() =>
 )
 
 const asistencias = { pendiente: 'Pendiente', presente: 'Presente', ausente: 'Ausente' }
+const estadosInscripcion = { pendiente: 'Pendiente', aprobada: 'Aceptada', rechazada: 'Rechazada', cancelada: 'Cancelada' }
+
+// Acepta o rechaza la inscripción de este feriante a este evento
+function cambiarEstado(i, estado) {
+  router.patch(`/coordinador/inscripciones/${i.id}/estado`, { estado }, { preserveScroll: true })
+}
 
 // El panel se actualiza solo: alguien puede reconfirmar, pagar o ceder su lugar sin que el coordinador recargue
 let intervalo = null
@@ -132,10 +150,6 @@ onMounted(() => {
   }, 20000)
 })
 onUnmounted(() => clearInterval(intervalo))
-
-function marcarPresente(i) {
-  router.patch(`/coordinador/inscripciones/${i.id}/presente`, {}, { preserveScroll: true })
-}
 
 function inscripcionDe(p) {
   return props.inscripciones.find(i => i.puesto_id === p.id)

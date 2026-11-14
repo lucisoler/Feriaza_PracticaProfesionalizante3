@@ -15,3 +15,6 @@ Schedule::command('feria:recordar-reconfirmacion')->hourly();
 // Vencida la hora de tolerancia, se anula la inscripción de quien no se
 // presentó y, si el evento es grande, queda vetado (RN-07, RN-08).
 Schedule::command('feria:aplicar-tolerancia')->everyTenMinutes();
+
+// Las cuentas anuladas vuelven solas tras 2 o 3 eventos reales (ver Feriante::eventosParaDesanular)
+Schedule::command('feria:desanular-cuentas')->dailyAt('00:30');
