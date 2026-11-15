@@ -12,6 +12,7 @@ use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\MiCuentaController;
 use App\Http\Controllers\PlanoController;
 use App\Http\Controllers\RecuperarContrasenaController;
+use App\Http\Controllers\RecuperarContrasenaSmsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -47,6 +48,9 @@ Route::middleware('guest:feriante')->group(function () {
     Route::post('/mi-cuenta/olvide-contrasena', [RecuperarContrasenaController::class, 'store'])->middleware('throttle:6,1');
     Route::get('/mi-cuenta/restablecer/{token}', [RecuperarContrasenaController::class, 'edit']);
     Route::post('/mi-cuenta/restablecer', [RecuperarContrasenaController::class, 'update'])->middleware('throttle:6,1');
+    Route::post('/mi-cuenta/olvide-contrasena/sms', [RecuperarContrasenaSmsController::class, 'store'])->middleware('throttle:10,1');
+    Route::get('/mi-cuenta/restablecer-sms', [RecuperarContrasenaSmsController::class, 'create']);
+    Route::post('/mi-cuenta/restablecer-sms', [RecuperarContrasenaSmsController::class, 'update'])->middleware('throttle:10,1');
 });
 
 // Area privada del feriante- read/Update/Delete de si mismo//
@@ -80,6 +84,7 @@ Route::middleware('auth')->prefix('coordinador')->group(function () {
 
     Route::get('/feriantes/crear', [CoordinadorFerianteController::class, 'create']);
     Route::post('/feriantes', [CoordinadorFerianteController::class, 'store']);
+    Route::get('/feriantes/{id}', [CoordinadorFerianteController::class, 'show'])->whereNumber('id');
     Route::get('/feriantes/{id}/editar', [CoordinadorFerianteController::class, 'edit']);
     Route::patch('/feriantes/{id}', [CoordinadorFerianteController::class, 'update']);
     Route::patch('/feriantes/{id}/estado', [CoordinadorFerianteController::class, 'cambiarEstado']);

@@ -35,6 +35,13 @@ return [
         ],
     ],
 
+    // Códigos de recuperación de contraseña por SMS (API REST de Twilio)
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_TOKEN'),
+        'desde' => env('TWILIO_DESDE'),
+    ],
+
     // Crear cuenta o entrar con Google / Facebook (Laravel Socialite)
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
