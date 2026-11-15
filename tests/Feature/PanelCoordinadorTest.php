@@ -34,7 +34,18 @@ class PanelCoordinadorTest extends TestCase
         $this->actingAs($this->coordinador)
             ->get('/coordinador')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Coordinador')->has('feriantes', 2));
+            ->assertInertia(fn ($page) => $page->component('Coordinador')
+                ->has('feriantes', 2)
+                ->has('feriantes.0.numero_registro'));
+    }
+
+    public function test_asigna_un_numero_de_registro_correlativo(): void
+    {
+        $primero = Feriante::factory()->create();
+        $segundo = Feriante::factory()->create();
+
+        $this->assertSame(1, $primero->numero_registro);
+        $this->assertSame(2, $segundo->numero_registro);
     }
 
     public function test_el_coordinador_crea_un_feriante(): void

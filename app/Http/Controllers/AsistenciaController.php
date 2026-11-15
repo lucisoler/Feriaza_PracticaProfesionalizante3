@@ -40,7 +40,7 @@ class AsistenciaController extends Controller
         $inscripciones = $evento->inscripciones()
             ->whereDate('fecha', $dia)
             ->whereNotIn('estado', ['cancelada', 'rechazada'])
-            ->with(['feriante:id,nombre,apellido,telefono,nombre_emprendimiento', 'puesto:id,numero'])
+            ->with(['feriante:id,nombre,apellido,telefono,nombre_emprendimiento,estado', 'puesto:id,numero'])
             ->orderBy('numero')
             ->get()
             ->map(fn (Inscripcion $i) => [

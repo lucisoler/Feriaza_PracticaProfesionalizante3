@@ -31,12 +31,6 @@
 
         <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
 
-        <!-- Cuenta nueva: el coordinador todavía no la revisó -->
-        <p v-if="feriante.estado === 'pendiente'" class="fz-aviso fz-caja">
-          Tu cuenta está <strong>pendiente de aprobación</strong>: el coordinador todavía no revisó tus datos.
-          Mientras tanto podés inscribirte a los eventos, pero cada inscripción quedará pendiente hasta que el coordinador la acepte.
-        </p>
-
         <p v-if="feriante.estado === 'anulado'" class="fz-error fz-caja">
           Tu cuenta fue anulada por el coordinador<template v-if="feriante.motivo_anulacion">: {{ feriante.motivo_anulacion }}</template>.
           No podés inscribirte a nuevos eventos.
@@ -44,8 +38,8 @@
 
         <!-- Resumen de la inscripción -->
         <dl class="fz-resumen">
-          <dt>Estado</dt>
-          <dd><span class="fz-estado" :class="`fz-estado-${feriante.estado}`">{{ estadosFeriante[feriante.estado] ?? feriante.estado }}</span></dd>
+          <dt>Número de feriante</dt>
+          <dd>{{ feriante.numero_registro ?? '—' }}</dd>
           <dt>Categoría</dt>
           <dd>{{ feriante.categoria?.nombre ?? 'Sin categoría' }}</dd>
           <dt>Inscripciones</dt>
@@ -213,13 +207,6 @@ const props = defineProps({
 })
 
 const formatoFecha = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
-
-const estadosFeriante = {
-  pendiente: 'Pendiente de aprobación',
-  aprobado: 'Aprobada',
-  rechazado: 'Rechazada',
-  anulado: 'Anulada',
-}
 
 function formatoDia(dia) {
   const texto = formatoFecha.format(new Date(`${dia}T00:00:00Z`))

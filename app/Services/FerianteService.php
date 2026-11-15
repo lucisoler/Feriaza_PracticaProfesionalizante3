@@ -15,6 +15,9 @@ class FerianteService
 {
     public function registrar(array $data): Feriante
     {
+        // El feriante queda habilitado al registrarse: no requiere aprobación del coordinador.
+        $data['estado'] ??= 'aprobado';
+
         return Feriante::create($data);
     }
 
