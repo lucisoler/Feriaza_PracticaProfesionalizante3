@@ -45,6 +45,15 @@ class CoordinadorFerianteController extends Controller
 
     }
 
+    public function show(int $id): Response
+    {
+        $feriante = Feriante::withCount('inscripciones')->findOrFail($id);
+
+        return Inertia::render('Coordinador/FeriantePanel', [
+            'feriante' => $feriante,
+        ]);
+    }
+
     public function update(Request $request, int $id): RedirectResponse
     {
         $feriante = Feriante::findOrFail($id);

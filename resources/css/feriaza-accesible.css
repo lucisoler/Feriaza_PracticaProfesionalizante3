@@ -163,14 +163,23 @@ a {
     padding: 0.8rem 0.75rem;
 }
 
-/* ---------- 7. Menos movimiento si la persona lo pidió en su sistema ---------- */
+/* ---------- 7. Movimiento: el botón de la cabecera manda sobre el sistema ----------
+   data-animaciones="activadas" o "pausadas" en <html> (ver resources/js/movimiento.js).
+   Sin elección guardada, rige la preferencia de "reducir movimiento" del sistema. */
 
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
+    :root:not([data-animaciones='activadas']) *,
+    :root:not([data-animaciones='activadas']) *::before,
+    :root:not([data-animaciones='activadas']) *::after {
+        animation: none !important;
+        transition: none !important;
         scroll-behavior: auto !important;
     }
+}
+
+:root[data-animaciones='pausadas'] *,
+:root[data-animaciones='pausadas'] *::before,
+:root[data-animaciones='pausadas'] *::after {
+    animation: none !important;
+    transition: none !important;
 }

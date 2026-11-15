@@ -229,7 +229,7 @@ class FerianteSeeder extends Seeder
                 'rubro_otro' => null,
                 'nombre_emprendimiento' => null,
                 'instagram' => null,
-                'estado' => 'pendiente',
+                'estado' => 'aprobado',
             ],
             [
                 'nombre' => 'María',
@@ -262,7 +262,7 @@ class FerianteSeeder extends Seeder
                 'rubro_otro' => 'Peluches de tela',
                 'nombre_emprendimiento' => 'Peluches Roxy',
                 'instagram' => '@peluches.roxy',
-                'estado' => 'pendiente',
+                'estado' => 'aprobado',
             ],
             [
                 'nombre' => 'Patricio',
@@ -295,7 +295,7 @@ class FerianteSeeder extends Seeder
                 'rubro_otro' => null,
                 'nombre_emprendimiento' => 'Nora Bazar',
                 'instagram' => null,
-                'estado' => 'pendiente',
+                'estado' => 'aprobado',
             ],
             [
                 'nombre' => 'Florencia',
@@ -310,14 +310,22 @@ class FerianteSeeder extends Seeder
             ],
         ];
 
+        // El seeder corre con los eventos de modelo desactivados (WithoutModelEvents),
+        // así que el hook 'creating' no asigna el número: lo hacemos acá.
+        $siguienteNumero = (int) Feriante::max('numero_registro') + 1;
+
         foreach ($feriantes as $datos) {
             $datos['categoria_id'] = $categorias[$datos['categoria']];
             unset($datos['categoria']);
 
-            Feriante::updateOrCreate(
+            $feriante = Feriante::updateOrCreate(
                 ['email' => $datos['email']],
                 $datos + ['password' => 'Feriante123']
             );
+
+            if (is_null($feriante->numero_registro)) {
+                $feriante->update(['numero_registro' => $siguienteNumero++]);
+            }
         }
     }
 }

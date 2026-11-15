@@ -72,6 +72,11 @@
 
         <!-- Gestión del coordinador -->
         <label class="fz-campo">
+          <span class="fz-etiqueta">Número de feriante</span>
+          <input class="fz-input" :value="feriante ? (feriante.numero_registro ?? '—') : 'Se asigna al guardar'" disabled />
+        </label>
+
+        <label class="fz-campo">
           <span class="fz-etiqueta">Estado de la inscripción</span>
           <select v-model="form.estado" class="fz-input" :class="{ 'fz-input-error': form.errors.estado }">
             <option value="pendiente">Pendiente</option>
@@ -114,7 +119,7 @@ const form = useForm({
   nombre_emprendimiento: props.feriante?.nombre_emprendimiento ?? '',
   categoria_id: props.feriante?.categoria_id ?? null,
   rubro_otro: props.feriante?.rubro_otro ?? '',
-  estado: props.feriante?.estado ?? 'pendiente',
+  estado: props.feriante?.estado ?? 'aprobado',
 })
 
 const categorias = computed(() => usePage().props.categorias ?? [])

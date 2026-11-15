@@ -54,6 +54,25 @@ class CoordinadorFeriantesApiTest extends TestCase
             ->assertJsonPath('data.0.nombre', 'Rosa');
     }
 
+    public function test_buscar_feriantes_por_numero(): void
+    {
+        $primero = Feriante::factory()->create([
+            'nombre' => 'Rosa',
+            'email' => 'rosa@example.com',
+            'nombre_emprendimiento' => 'Tejidos Rosa',
+        ]);
+        Feriante::factory()->create([
+            'nombre' => 'Mario',
+            'email' => 'mario@example.com',
+            'nombre_emprendimiento' => 'Panadería',
+        ]);
+
+        $this->getJson("/api/v1/coordinador/feriantes?q={$primero->numero_registro}")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.nombre', 'Rosa');
+    }
+
     public function test_crear_un_feriante(): void
     {
         $this->postJson('/api/v1/coordinador/feriantes', [

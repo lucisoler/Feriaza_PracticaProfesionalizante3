@@ -17,6 +17,7 @@ class Feriante extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
+        'numero_registro',
         'nombre', 'apellido', 'email', 'password', 'proveedor', 'proveedor_id',
         'nombre_emprendimiento',
         'categoria_id', 'rubro_otro', 'telefono',
@@ -30,10 +31,25 @@ class Feriante extends Authenticatable
     ];
 
     protected $casts = [
+        'numero_registro' => 'integer',
         'vetado_at' => 'datetime',
         'anulado_at' => 'datetime',
         'password' => 'hashed', // Laravel la hashea sola al guardar
     ];
+
+    /**
+     * Cada feriante recibe un número de registro correlativo al darse de alta.
+     * Se calcula acá para que también lo reciban los creados por la API o por
+     * una factory, sin depender de que el controlador lo envíe.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Feriante $feriante) {
+            if (empty($feriante->numero_registro)) {
+                $feriante->numero_registro = (int) (static::max('numero_registro') ?? 0) + 1;
+            }
+        });
+    }
 
     // La categoría se carga siempre junto con el feriante
     protected $with = ['categoria'];

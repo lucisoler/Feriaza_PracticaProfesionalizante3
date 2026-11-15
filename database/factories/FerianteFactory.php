@@ -22,8 +22,8 @@ class FerianteFactory extends Factory
             // Usa una categoría existente o crea una que recibe mesa
             'categoria_id' => fn () => Categoria::where('recibe_mesa', true)->value('id')
                 ?? Categoria::create(['nombre' => 'Artesanos', 'prioridad' => 1, 'recibe_mesa' => true])->id,
-            'telefono' => '3624' . fake()->numerify('######'),
-            'estado' => 'pendiente',
+            'telefono' => '3624'.fake()->numerify('######'),
+            'estado' => 'aprobado',
         ];
     }
 }

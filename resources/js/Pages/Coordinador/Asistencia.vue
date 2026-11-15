@@ -16,6 +16,7 @@
 
           <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
           <p v-if="$page.props.errors.inscripcion" class="fz-error">{{ $page.props.errors.inscripcion }}</p>
+          <p v-if="$page.props.errors.feriante" class="fz-error">{{ $page.props.errors.feriante }}</p>
 
           <p v-if="!evento" class="fz-ayuda">Todavía no hay eventos abiertos ni cerrados para controlar.</p>
 
@@ -34,7 +35,7 @@
 
             <table class="fz-tabla">
               <thead>
-                <tr><th>N° de llegada</th><th>Mesa</th><th>Feriante</th><th>Teléfono</th><th>Asistencia</th><th>Acción</th></tr>
+                <tr><th>N° de llegada</th><th>Mesa</th><th>Feriante</th><th>Teléfono</th><th>Asistencia</th><th>Acción</th><th>Acciones</th></tr>
               </thead>
               <tbody>
                 <tr v-for="i in inscripciones" :key="i.id">
@@ -54,9 +55,18 @@
                     </button>
                     <span v-else-if="i.asistencia === 'pendiente'" class="fz-secundario">Tolerancia hasta las {{ i.hora_fin_tolerancia }} h</span>
                   </td>
+                  <td data-etiqueta="Acciones" class="fz-celda-acciones">
+                    <div class="fz-acciones-fila">
+                      <button type="button" class="fz-accion fz-accion-aprobar" :disabled="i.feriante.estado === 'aprobado'" @click="cambiarEstado(i.feriante.id, 'aprobado')">Aprobar</button>
+                      <button type="button" class="fz-accion fz-accion-rechazar" :disabled="i.feriante.estado === 'rechazado'" @click="cambiarEstado(i.feriante.id, 'rechazado')">Rechazar</button>
+                      <button type="button" class="fz-accion fz-accion-rechazar" :disabled="i.feriante.estado === 'anulado'" @click="anular(i.feriante)">Anular</button>
+                      <Link :href="`/coordinador/feriantes/${i.feriante.id}/editar`" class="fz-accion fz-accion-editar">Editar</Link>
+                      <button type="button" class="fz-accion fz-accion-eliminar" @click="eliminar(i.feriante)">Eliminar</button>
+                    </div>
+                  </td>
                 </tr>
                 <tr v-if="inscripciones.length === 0">
-                  <td colspan="6" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                  <td colspan="7" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
                 </tr>
               </tbody>
             </table>
@@ -69,8 +79,9 @@
 
 <script setup>
 import { onMounted, onUnmounted, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import PanelCabecera from '../../Components/PanelCabecera.vue'
+import { pedirConfirmacion } from '../../dialogo.js'
 
 const props = defineProps({
   eventos: { type: Array, default: () => [] },
@@ -104,6 +115,37 @@ function cambiarDia(d) {
 
 function marcarPresente(i) {
   router.patch(`/coordinador/inscripciones/${i.id}/presente`, {}, { preserveScroll: true })
+}
+
+function cambiarEstado(id, estado) {
+  router.patch(`/coordinador/feriantes/${id}/estado`, { estado }, { preserveScroll: true, preserveState: true })
+}
+
+// Inasistencia, falta de pago u otra falta (términos y condiciones)
+async function anular(feriante) {
+  const motivo = await pedirConfirmacion({
+    titulo: 'Anular cuenta',
+    mensaje: `Se anula la cuenta de ${feriante.nombre} ${feriante.apellido} y se liberan sus mesas reservadas.`,
+    textoConfirmar: 'Anular cuenta',
+    peligro: true,
+    conCampo: true,
+    etiquetaCampo: 'Motivo (inasistencia, falta de pago u otra falta)',
+  })
+  if (motivo) {
+    router.patch(`/coordinador/feriantes/${feriante.id}/estado`, { estado: 'anulado', motivo_anulacion: motivo }, { preserveScroll: true, preserveState: true })
+  }
+}
+
+async function eliminar(feriante) {
+  const confirmado = await pedirConfirmacion({
+    titulo: 'Eliminar feriante',
+    mensaje: `¿Eliminar a ${feriante.nombre} ${feriante.apellido}? Se libera su mesa.`,
+    textoConfirmar: 'Eliminar',
+    peligro: true,
+  })
+  if (confirmado) {
+    router.delete(`/coordinador/feriantes/${feriante.id}`, { preserveScroll: true, preserveState: true })
+  }
 }
 
 // Se actualiza sola: los feriantes pueden reconfirmar o ceder su lugar mientras el coordinador controla

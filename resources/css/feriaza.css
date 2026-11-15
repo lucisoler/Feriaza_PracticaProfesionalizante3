@@ -15,16 +15,25 @@
         line-height: 1.5;
     }
 
+    /* Monte chaqueño de fondo: quebrachos colorados y un par de aves, detrás de todo */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: url('/fondo-monte.svg') center bottom / cover no-repeat;
+        pointer-events: none;
+    }
+
+    :root[data-tema='oscuro'] body::before {
+        opacity: 0.45;
+    }
+
     :focus-visible {
         outline: 3px solid var(--color-siesta);
         outline-offset: 2px;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        * {
-            transition: none !important;
-        }
-    }
 }
 
 @layer components {

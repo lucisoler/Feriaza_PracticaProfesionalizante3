@@ -19,7 +19,7 @@ class FerianteController extends Controller
 {
     public function __construct(private FerianteService $ferianteService) {}
 
-    // GET /api/v1/coordinador/feriantes?q=texto: busca por nombre, apellido, email o emprendimiento
+    // GET /api/v1/coordinador/feriantes?q=texto: busca por número, nombre, apellido, email o emprendimiento
     public function index(Request $request): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));
@@ -31,6 +31,10 @@ class FerianteController extends Controller
                         ->orWhere('apellido', 'like', "%{$q}%")
                         ->orWhere('email', 'like', "%{$q}%")
                         ->orWhere('nombre_emprendimiento', 'like', "%{$q}%");
+
+                    if (is_numeric($q)) {
+                        $sub->orWhere('numero_registro', 'like', "%{$q}%");
+                    }
                 });
             })
             ->orderBy('apellido')

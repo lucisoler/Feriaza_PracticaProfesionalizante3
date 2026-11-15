@@ -10,31 +10,42 @@
 
         <div class="fz-tarjeta-cuerpo">
           <div class="fz-cabecera-tarjeta">
-            <h1 class="fz-titulo">Feriantes</h1>
-            <p class="fz-secundario">
-              {{ cantidad('pendiente') }} pendientes, {{ cantidad('aprobado') }} aprobados, {{ cantidad('rechazado') }} rechazados y {{ cantidad('anulado') }} anulados
-            </p>
+            <div>
+              <h1 class="fz-titulo">Feriantes</h1>
+              <p class="fz-secundario">
+                Planilla de feriantes registrados. Total: {{ feriantes.length }}.
+              </p>
+            </div>
           </div>
 
           <p v-if="$page.props.flash?.success" class="fz-aviso">{{ $page.props.flash.success }}</p>
 
           <label class="fz-campo fz-buscador">
             <span class="fz-etiqueta">Buscar</span>
-            <input v-model="busqueda" type="search" class="fz-input" placeholder="Nombre, categoría o teléfono" />
+            <input v-model="busqueda" type="search" class="fz-input" placeholder="Número, nombre, categoría o teléfono" />
           </label>
 
           <table class="fz-tabla">
             <thead>
               <tr>
+                <th>Número de feriante</th>
                 <th>Nombre</th>
                 <th>Categoría</th>
                 <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="f in filtrados" :key="f.id">
+              <tr
+                v-for="f in filtrados"
+                :key="f.id"
+                class="fz-fila-clickeable"
+                role="link"
+                tabindex="0"
+                @click="ver(f)"
+                @keydown.enter="ver(f)"
+                @keydown.space.prevent="ver(f)"
+              >
+                <td data-etiqueta="Número de feriante">{{ f.numero_registro ?? '—' }}</td>
                 <td class="fz-celda-nombre" data-etiqueta="Nombre">{{ f.nombre }} {{ f.apellido }}</td>
                 <td data-etiqueta="Categoría">
                   <span>
@@ -43,21 +54,9 @@
                   </span>
                 </td>
                 <td data-etiqueta="Teléfono">{{ f.telefono }}</td>
-                <td data-etiqueta="Estado">
-                  <span class="fz-estado" :class="`fz-estado-${f.estado}`" :title="f.motivo_anulacion ?? ''">{{ f.estado }}</span>
-                </td>
-                <td class="fz-celda-acciones">
-                  <div class="fz-acciones-fila">
-                    <button type="button" class="fz-accion fz-accion-aprobar" :disabled="f.estado === 'aprobado'" @click="cambiarEstado(f.id, 'aprobado')">Aprobar</button>
-                    <button type="button" class="fz-accion fz-accion-rechazar" :disabled="f.estado === 'rechazado'" @click="cambiarEstado(f.id, 'rechazado')">Rechazar</button>
-                    <button type="button" class="fz-accion fz-accion-rechazar" :disabled="f.estado === 'anulado'" @click="anular(f)">Anular</button>
-                    <Link :href="`/coordinador/feriantes/${f.id}/editar`" class="fz-accion fz-accion-editar">Editar</Link>
-                    <button type="button" class="fz-accion fz-accion-eliminar" @click="eliminar(f)">Eliminar</button>
-                  </div>
-                </td>
               </tr>
               <tr v-if="filtrados.length === 0">
-                <td colspan="5" class="fz-tabla-vacia">
+                <td colspan="4" class="fz-tabla-vacia">
                   {{ busqueda ? 'Ningún feriante coincide con la búsqueda.' : 'Todavía no hay feriantes inscriptos.' }}
                 </td>
               </tr>
@@ -73,7 +72,6 @@
 import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import PanelCabecera from '../Components/PanelCabecera.vue'
-import { pedirConfirmacion } from '../dialogo.js'
 
 const props = defineProps({
   feriantes: {
@@ -84,49 +82,19 @@ const props = defineProps({
 
 const busqueda = ref('')
 
-// Filtra en el navegador por nombre, apellido, categoría o teléfono
+// Filtra en el navegador por número, nombre, apellido, categoría o teléfono
 const filtrados = computed(() => {
   const texto = busqueda.value.trim().toLowerCase()
   if (!texto) return props.feriantes
   return props.feriantes.filter(f =>
-    [f.nombre, f.apellido, f.categoria?.nombre, f.rubro_otro, f.telefono]
+    [f.numero_registro, f.nombre, f.apellido, f.categoria?.nombre, f.rubro_otro, f.telefono]
       .filter(Boolean)
       .some(valor => String(valor).toLowerCase().includes(texto))
   )
 })
 
-function cantidad(estado) {
-  return props.feriantes.filter(f => f.estado === estado).length
-}
-
-function cambiarEstado(id, estado) {
-  router.patch(`/coordinador/feriantes/${id}/estado`, { estado }, { preserveScroll: true })
-}
-
-// Inasistencia, falta de pago u otra falta (términos y condiciones)
-async function anular(feriante) {
-  const motivo = await pedirConfirmacion({
-    titulo: 'Anular cuenta',
-    mensaje: `Se anula la cuenta de ${feriante.nombre} ${feriante.apellido} y se liberan sus mesas reservadas.`,
-    textoConfirmar: 'Anular cuenta',
-    peligro: true,
-    conCampo: true,
-    etiquetaCampo: 'Motivo (inasistencia, falta de pago u otra falta)',
-  })
-  if (motivo) {
-    router.patch(`/coordinador/feriantes/${feriante.id}/estado`, { estado: 'anulado', motivo_anulacion: motivo }, { preserveScroll: true })
-  }
-}
-
-async function eliminar(feriante) {
-  const confirmado = await pedirConfirmacion({
-    titulo: 'Eliminar feriante',
-    mensaje: `¿Eliminar a ${feriante.nombre} ${feriante.apellido}? Se libera su mesa.`,
-    textoConfirmar: 'Eliminar',
-    peligro: true,
-  })
-  if (confirmado) {
-    router.delete(`/coordinador/feriantes/${feriante.id}`, { preserveScroll: true })
-  }
+// El coordinador selecciona un feriante y va a su panel con todos sus datos
+function ver(feriante) {
+  router.visit(`/coordinador/feriantes/${feriante.id}`)
 }
 </script>
