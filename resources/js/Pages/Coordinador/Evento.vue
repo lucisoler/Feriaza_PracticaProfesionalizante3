@@ -41,64 +41,68 @@
             </div>
           </div>
 
-          <div class="fz-plano-grilla">
-            <div>
-              <LeyendaPlano :categorias="categorias" />
-              <PlanoFeria
-                :lugar="lugar"
-                :categorias="categorias"
-                modo="ver"
-                :ocupados="ocupados"
-                :seleccionado="mesaActiva?.id ?? null"
-                :detalles="detalles"
-                @elegir-mesa="p => (mesaActiva = p)"
-              />
-            </div>
+          <!-- Plano completo, centrado; al tocar una mesa aparece un cuadro con los datos del feriante -->
+          <div class="fz-bloque-centrado">
+            <LeyendaPlano :categorias="categorias" />
+            <PlanoFeria
+              :lugar="lugar"
+              :categorias="categorias"
+              modo="ver"
+              ajustado
+              :ocupados="ocupados"
+              :seleccionado="mesaActiva?.id ?? null"
+              :detalles="detalles"
+              @elegir-mesa="p => (mesaActiva = p)"
+              @deseleccionar="mesaActiva = null"
+            >
+              <template #globo="{ puesto }">
+                <div class="fz-plano-globo">
+                  <strong>Mesa N° {{ puesto.numero }}</strong>
+                  <template v-if="inscripcionDe(puesto)">
+                    <div>{{ inscripcionDe(puesto).feriante.nombre }} {{ inscripcionDe(puesto).feriante.apellido }}</div>
+                    <div class="fz-secundario">{{ inscripcionDe(puesto).feriante.nombre_emprendimiento }}</div>
+                    <div class="fz-secundario">Tel: {{ inscripcionDe(puesto).feriante.telefono }}</div>
+                    <span class="fz-estado" :class="`fz-estado-${inscripcionDe(puesto).estado}`">{{ estadosInscripcion[inscripcionDe(puesto).estado] ?? inscripcionDe(puesto).estado }}</span>
+                  </template>
+                  <div v-else class="fz-secundario">Libre el {{ formatoDia(dia).toLowerCase() }}.</div>
+                </div>
+              </template>
+            </PlanoFeria>
+            <p class="fz-secundario" style="margin-top: 0.5rem">Tocá una mesa para ver quién la reservó.</p>
+          </div>
 
-            <aside class="fz-plano-lateral">
-              <div v-if="mesaActiva" class="fz-caja">
-                <h2 class="fz-subtitulo">Mesa N° {{ mesaActiva.numero }}</h2>
-                <template v-if="inscripcionDe(mesaActiva)">
-                  <p><strong>{{ inscripcionDe(mesaActiva).feriante.nombre }} {{ inscripcionDe(mesaActiva).feriante.apellido }}</strong></p>
-                  <p class="fz-secundario">{{ inscripcionDe(mesaActiva).feriante.nombre_emprendimiento }}</p>
-                  <p class="fz-secundario">Tel: {{ inscripcionDe(mesaActiva).feriante.telefono }}</p>
-                  <span class="fz-estado" :class="`fz-estado-${inscripcionDe(mesaActiva).estado}`">{{ inscripcionDe(mesaActiva).estado }}</span>
-                </template>
-                <p v-else class="fz-secundario">Libre el {{ formatoDia(dia).toLowerCase() }}.</p>
-              </div>
-              <p v-else class="fz-secundario">Tocá una mesa para ver quién la reservó.</p>
-
-              <h2 class="fz-subtitulo" style="margin-top: 1.25rem">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
-              <table class="fz-tabla fz-tabla-compacta">
-                <thead>
-                  <tr><th>Mesa</th><th>Feriante</th><th>Inscripción</th><th>Reconfirmó</th><th>Asistencia</th></tr>
-                </thead>
-                <tbody>
-                  <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
-                    <td>{{ i.mesa ?? '—' }}</td>
-                    <td>
-                      <span class="fz-punto" :style="{ background: colorCategoria(i.feriante.categoria_id) }"></span>
-                      {{ i.feriante.nombre }} {{ i.feriante.apellido }}
-                    </td>
-                    <td>
-                      <span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ estadosInscripcion[i.estado] ?? i.estado }}</span>
-                      <div class="fz-acciones-fila" style="margin-top: 0.3rem">
-                        <button v-if="i.estado !== 'aprobada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-aprobar" @click="cambiarEstado(i, 'aprobada')">Aceptar</button>
-                        <button v-if="i.estado !== 'rechazada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-rechazar" @click="cambiarEstado(i, 'rechazada')">Rechazar</button>
-                      </div>
-                    </td>
-                    <td>{{ i.confirmacion === 'confirmada' ? 'Sí' : 'No' }}</td>
-                    <td>
-                      <span class="fz-estado" :class="`fz-estado-${i.asistencia}`">{{ asistencias[i.asistencia] ?? i.asistencia }}</span>
-                      <Link href="/coordinador/asistencia" class="fz-enlace">Controlar</Link>
-                    </td>
-                  </tr>
-                  <tr v-if="inscripciones.length === 0">
-                    <td colspan="5" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </aside>
+          <!-- Lista de inscriptos, centrada debajo del plano -->
+          <div class="fz-bloque-centrado" style="margin-top: 1.5rem">
+            <h2 class="fz-subtitulo">Inscriptos el {{ formatoDia(dia).toLowerCase() }}</h2>
+            <table class="fz-tabla fz-tabla-compacta">
+              <thead>
+                <tr><th>Mesa</th><th>Feriante</th><th>Inscripción</th><th>Reconfirmó</th><th>Asistencia</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="i in inscripcionesOrdenadas" :key="i.id">
+                  <td>{{ i.mesa ?? '—' }}</td>
+                  <td>
+                    <span class="fz-punto" :style="{ background: colorCategoria(i.feriante.categoria_id) }"></span>
+                    {{ i.feriante.nombre }} {{ i.feriante.apellido }}
+                  </td>
+                  <td>
+                    <span class="fz-estado" :class="`fz-estado-${i.estado}`">{{ estadosInscripcion[i.estado] ?? i.estado }}</span>
+                    <div class="fz-acciones-fila" style="margin-top: 0.3rem">
+                      <button v-if="i.estado !== 'aprobada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-aprobar" @click="cambiarEstado(i, 'aprobada')">Aceptar</button>
+                      <button v-if="i.estado !== 'rechazada' && i.estado !== 'cancelada'" type="button" class="fz-accion fz-accion-rechazar" @click="cambiarEstado(i, 'rechazada')">Rechazar</button>
+                    </div>
+                  </td>
+                  <td>{{ i.confirmacion === 'confirmada' ? 'Sí' : 'No' }}</td>
+                  <td>
+                    <span class="fz-estado" :class="`fz-estado-${i.asistencia}`">{{ asistencias[i.asistencia] ?? i.asistencia }}</span>
+                    <Link href="/coordinador/asistencia" class="fz-enlace">Controlar</Link>
+                  </td>
+                </tr>
+                <tr v-if="inscripciones.length === 0">
+                  <td colspan="5" class="fz-tabla-vacia">Nadie se inscribió para este día todavía.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

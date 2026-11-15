@@ -41,7 +41,9 @@ class CuentaSocialController extends Controller
     {
         try {
             $usuario = Socialite::driver($proveedor)->user();
-        } catch (Throwable) {
+        } catch (Throwable $error) {
+            report($error);
+
             return redirect('/')->withErrors([
                 'social' => 'No pudimos conectar con '.Str::ucfirst($proveedor).'. Probá de nuevo.',
             ]);

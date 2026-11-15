@@ -5,7 +5,8 @@
       <button type="button" class="fz-boton-chico" :aria-pressed="vista === 'satelite'" @click="vista = 'satelite'">Satélite</button>
     </div>
     <MapaSatelital v-if="vista === 'satelite'" :slug="lugar.slug" />
-    <div v-show="vista === 'plano'" class="fz-plano">
+    <div v-show="vista === 'plano'" class="fz-plano" :class="{ 'fz-plano-ajustado': ajustado }">
+    <div class="fz-plano-relativo">
     <svg
       ref="svg"
       :viewBox="`0 0 ${lugar.ancho} ${lugar.alto}`"
@@ -87,6 +88,15 @@
         pointer-events="none"
       />
     </svg>
+      <!-- Cuadro con los datos de la mesa seleccionada, ubicado encima de la mesa -->
+      <div
+        v-if="puestoSeleccionado && $slots.globo"
+        class="fz-plano-globo-posicion"
+        :style="estiloGlobo"
+      >
+        <slot name="globo" :puesto="puestoSeleccionado" />
+      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -117,6 +127,8 @@ const props = defineProps({
   borrador: { type: Object, default: null },
   // Texto extra por mesa para el título emergente (ej.: nombre del feriante)
   detalles: { type: Object, default: () => ({}) },
+  // Muestra el plano completo sin recortarlo en pantallas angostas
+  ajustado: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['elegir-mesa', 'elegir-seccion', 'agregar-mesa', 'mover-mesa', 'dibujar-seccion', 'deseleccionar'])
@@ -128,6 +140,27 @@ const svg = ref(null)
 const vista = ref('plano')
 
 const base = computed(() => BASES[props.lugar.slug] ?? null)
+
+// Mesa seleccionada, para ubicar sobre ella el cuadro con sus datos
+const puestoSeleccionado = computed(() =>
+  props.lugar.puestos.find(p => p.id === props.seleccionado && p.x !== null && p.y !== null) ?? null
+)
+
+// El cuadro va encima de la mesa (o debajo si está arriba de todo) y se corre si está cerca del borde
+const estiloGlobo = computed(() => {
+  const p = puestoSeleccionado.value
+  if (!p) return {}
+  const izquierda = (p.x / props.lugar.ancho) * 100
+  const arriba = (p.y / props.lugar.alto) * 100
+  const encimaDeLaMesa = p.y / props.lugar.alto > 0.3
+  const corrimiento = izquierda < 20 ? '0%' : izquierda > 80 ? '-100%' : '-50%'
+  const vertical = encimaDeLaMesa ? 'calc(-100% - 12px)' : '12px'
+  return {
+    left: `${izquierda}%`,
+    top: `${arriba}%`,
+    transform: `translate(${corrimiento}, ${vertical})`,
+  }
+})
 const ocupadosSet = computed(() => new Set(props.ocupados))
 const seccionesPorId = computed(() => Object.fromEntries(props.lugar.secciones.map(s => [s.id, s])))
 const categoriasPorId = computed(() => Object.fromEntries(props.categorias.map(c => [c.id, c])))
@@ -301,7 +334,7 @@ function alTocarFondo(evento) {
   }
   // Fuera de una sección: el servidor responde que las mesas van dentro de una
   if (props.modo === 'agregar') emit('agregar-mesa', punto(evento))
-  else if (props.modo === 'editar') emit('deseleccionar')
+  else if (props.modo === 'editar' || props.modo === 'ver') emit('deseleccionar')
 }
 
 function alTocarSeccion(s, evento) {
@@ -313,6 +346,8 @@ function alTocarSeccion(s, evento) {
     emit('agregar-mesa', punto(evento))
   } else if (props.modo === 'editar') {
     emit('elegir-seccion', s)
+  } else if (props.modo === 'ver') {
+    emit('deseleccionar')
   }
 }
 </script>
