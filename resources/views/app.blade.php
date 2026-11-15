@@ -14,6 +14,8 @@
           var guardado = localStorage.getItem('fz-tema');
           var tema = guardado ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro');
           document.documentElement.setAttribute('data-tema', tema);
+          var movimiento = localStorage.getItem('fz-animaciones');
+          if (movimiento) document.documentElement.setAttribute('data-animaciones', movimiento);
         } catch (e) {}
       })();
     </script>

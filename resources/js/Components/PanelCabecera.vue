@@ -2,7 +2,6 @@
   <header class="fz-panel-cabecera">
     <div>
       <p class="fz-marca-nombre">Feriaza</p>
-      <p class="fz-marca-lugar">Panel del coordinador</p>
     </div>
     <nav class="fz-nav" aria-label="Secciones del panel">
       <Link v-for="item in items" :key="item.href" :href="item.href" class="fz-nav-item"
@@ -27,6 +26,7 @@
           </div>
         </div>
       </div>
+      <BotonMovimiento />
       <BotonModoOscuro />
       <slot />
       <button type="button" class="fz-enlace" @click="router.post('/logout')">Cerrar sesión</button>
@@ -38,6 +38,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import BotonModoOscuro from './BotonModoOscuro.vue'
+import BotonMovimiento from './BotonMovimiento.vue'
 
 defineProps({
   // feriantes | eventos | plano
