@@ -25,6 +25,3 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
-
-# Copia de respaldo de cambios de Docker (no se versiona)
-/Docker_de_respuesto/
