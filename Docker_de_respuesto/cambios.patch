@@ -1,0 +1,107 @@
+diff --git a/Dockerfile b/Dockerfile
+index d7cc137..5306382 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -7,7 +7,8 @@ FROM dunglas/frankenphp:1-php8.4-alpine
+ 
+ ENV COMPOSER_ALLOW_SUPERUSER=1
+ 
+-RUN install-php-extensions pdo_sqlite bcmath opcache intl zip
++# La imagen base ya trae pdo_sqlite y OPcache. No se compilan extensiones extra:
++# el almacenamiento de Docker en esta máquina es chico y el build se queda sin espacio.
+ 
+ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+ 
+diff --git a/docker-compose.yml b/docker-compose.yml
+index a874ef9..476b74e 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -6,6 +6,9 @@ services:
+     restart: unless-stopped
+     env_file: .env
+     environment:
++      APP_ENV: production
++      APP_DEBUG: "false"
++      APP_URL: ${APP_PUBLIC_URL:-http://localhost:8089}
+       DB_CONNECTION: sqlite
+       DB_DATABASE: /app/storage/app/database.sqlite
+     ports:
+diff --git a/docs/instalacion.md b/docs/instalacion.md
+index 15e0c7e..97e77e9 100644
+--- a/docs/instalacion.md
++++ b/docs/instalacion.md
+@@ -127,12 +127,61 @@ ## 5. Pruebas automatizadas
+ 
+ ## 6. Despliegue con Docker
+ 
+-El despliegue en el servidor del docente se realiza en el Sprint 6. Esta sección se completará con:
++La aplicación se empaqueta en una sola imagen (FrankenPHP + PHP 8.4 sobre Alpine) y la base de datos es SQLite, guardada en el volumen `app-storage`. El `Dockerfile` no incluye Node, por eso el frontend se compila antes en la máquina de despliegue.
+ 
+-- El `Dockerfile` de la aplicación y el `docker-compose.yml` con los servicios `app` (PHP con Laravel), `web` (servidor web) y `db` (MySQL 8.0).
+-- Las variables de entorno de producción (sin secretos).
+-- Los comandos de despliegue: `docker compose up -d --build` y `docker compose exec app php artisan migrate --force`.
+-- La dirección del servidor provista por el docente y la verificación de los flujos críticos en esa instancia (RNF-17).
++### 6.1 Requisitos
++
++- Docker y Docker Compose (v2 o superior).
++- Node 22 y npm, solo para compilar el frontend.
++- Un archivo `.env` con `APP_KEY` generada y las credenciales reales (no se sube al repositorio).
++
++### 6.2 Pasos
++
++```bash
++# 1. Compilar el frontend (genera public/build, que el Dockerfile exige)
++npm ci
++npm run build
++
++# 2. Construir y levantar el contenedor
++docker compose up -d --build
++
++# 3. Crear las tablas (sin --seed: no cargar usuarios de prueba en producción)
++docker compose exec app php artisan migrate --force
++
++# 4. Verificar
++docker compose ps
++docker compose logs -f app
++```
++
++La aplicación queda en `http://localhost:8089`. El puerto se cambia con `APP_PORT` en el `.env`.
++
++### 6.3 Variables de producción
++
++`docker-compose.yml` fija estos valores, que prevalecen sobre los del `.env`:
++
++| Variable | Valor | Motivo |
++|---|---|---|
++| `APP_ENV` | `production` | Modo de producción |
++| `APP_DEBUG` | `false` | No mostrar trazas de error al público |
++| `APP_URL` | `${APP_PUBLIC_URL}` o `http://localhost:8089` | Dirección pública; se usa en enlaces y en los callbacks de Google/Facebook |
++| `DB_CONNECTION` / `DB_DATABASE` | `sqlite` / `/app/storage/app/database.sqlite` | Base dentro del volumen persistente |
++
++Para publicar en un servidor, definir `APP_PUBLIC_URL` en el `.env` del proyecto (Compose lo lee de ahí) o en el shell, por ejemplo `APP_PUBLIC_URL=https://feriaza.ejemplo.org`. No hace falta mantener `APP_URL` del `.env` en sincronía, porque el compose lo sobrescribe. Esa URL debe registrarse en las consolas de Google y Facebook como `${APP_URL}/auth/google/callback` y `${APP_URL}/auth/facebook/callback`.
++
++### 6.4 Operación
++
++| Tarea | Comando |
++|---|---|
++| Ver estado | `docker compose ps` |
++| Ver logs | `docker compose logs -f app` |
++| Reiniciar | `docker compose restart app` |
++| Actualizar tras cambios de código | `npm run build` y luego `docker compose up -d --build`, y `docker compose exec app php artisan migrate --force` si hay migraciones nuevas |
++| Detener | `docker compose down` (conserva los datos) |
++| Borrar todo, incluidos los datos | `docker compose down -v` (**destructivo**: borra la base SQLite) |
++
++### 6.5 Verificación en la instancia del docente
++
++La dirección del servidor la provee el docente. En esa instancia hay que verificar los flujos críticos (RNF-17): inicio de sesión del coordinador, registro y cuenta del feriante, y la carga de planos.
+ 
+ ## 7. Problemas frecuentes
+ 
+@@ -143,4 +192,7 @@ ## 7. Problemas frecuentes
+ | `Unknown database 'feria_plaza'` | Falta crear la base de datos (paso 2.4). |
+ | XAMPP muestra "MySQL shutdown unexpectedly" | El proyecto no usa el MySQL de XAMPP; no es necesario iniciarlo. |
+ | La página se ve sin estilos | Falta ejecutar `npm run dev` en la segunda terminal. |
++| `Falta public/build` al construir la imagen | Ejecutar `npm ci && npm run build` antes de `docker compose up -d --build`. |
++| `No space left on device` al construir la imagen | El almacenamiento de Docker está lleno. Liberar espacio con `docker system prune -f` y `docker builder prune -f` (no borra volúmenes ni la imagen en uso) y reintentar. Si la partición de Docker es muy chica, ampliarla. |
++| `No application encryption key has been specified` en el contenedor | Falta `APP_KEY` en el `.env`: generarla con `php artisan key:generate --show` y pegarla en el `.env`. |
+ | `No application encryption key has been specified` | Falta ejecutar `php artisan key:generate`. |
