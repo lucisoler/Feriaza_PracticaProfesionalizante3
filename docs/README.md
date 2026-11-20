@@ -23,8 +23,8 @@
 | [diseno-interfaz.md](diseno-interfaz.md) | Principios de diseño, mapa de navegación por rol y 7 wireframes | Completo |
 | [stack.md](stack.md) | Tecnologías, versiones y justificación | Completo |
 | [instalacion.md](instalacion.md) | Instalación local con MySQL 8, usuarios de prueba y problemas frecuentes | Completo (despliegue en Sprint 6) |
-| [pruebas.md](pruebas.md) | 44 pruebas automatizadas (PHPUnit) con sus resultados y 19 casos de prueba manual | En curso (pruebas manuales por ejecutar) |
-| [decisiones.md](decisiones.md) | 8 decisiones de diseño con contexto y consecuencias | Completo |
+| [pruebas.md](pruebas.md) | 117 pruebas automatizadas (PHPUnit) con su última ejecución, 18 casos de prueba manual, 25 pruebas de API y registro de defectos | En curso (falta Vitest) |
+| [decisiones.md](decisiones.md) | 12 decisiones de diseño con contexto y consecuencias | Completo |
 | [planificacion.md](planificacion.md) | 18 historias de usuario, 13 tareas técnicas, plan de los sprints 3 a 6, hitos y riesgos | Completo |
 
 ## Resumen del proyecto

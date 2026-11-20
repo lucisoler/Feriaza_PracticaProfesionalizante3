@@ -57,3 +57,31 @@ Cada decisión registra el contexto, lo que se decidió y sus consecuencias. Est
 - **Contexto:** En la computadora de desarrollo conviven el MySQL de XAMPP (MariaDB) y un servidor MySQL 8 instalado como servicio de Windows (`MySQL80`, puerto 3307). El proyecto estaba configurado para el puerto 3307, pero la documentación inicial indicaba MariaDB de XAMPP. Además, el MySQL de XAMPP no inicia por un conflicto con el otro servidor.
 - **Decisión:** Usar MySQL 8.0 (servicio `MySQL80`, puerto 3307, base `feria_plaza`) como base de datos de desarrollo y la imagen `mysql:8.0` para el despliegue en Docker.
 - **Consecuencias:** Un único motor de base de datos en desarrollo y en producción, lo que evita diferencias de comportamiento. La guía de instalación y el stack se actualizaron para reflejar este entorno. El MySQL de XAMPP no se usa en el proyecto.
+
+## D-09 — Inicio de sesión con Google junto al registro con contraseña
+
+- **Estado:** Aceptada
+- **Contexto:** Muchos feriantes no quieren crear una contraseña nueva para inscribirse, y el registro tradicional obliga a cargar todos los datos a mano.
+- **Decisión:** Ofrecer el ingreso con cuenta de Google (Laravel Socialite) como alternativa al registro con contraseña. Si el usuario entra por primera vez con Google, se le pide completar sus datos antes de crear la cuenta (`CuentaSocialController`).
+- **Consecuencias:** Menos fricción en la inscripción. El feriante depende de un proveedor externo para ingresar, por lo que la contraseña local sigue siendo necesaria como opción alternativa.
+
+## D-10 — Imagen Docker liviana sin Node ni compilación de frontend
+
+- **Estado:** Aceptada
+- **Contexto:** La cuota de almacenamiento de Docker en la máquina del proyecto es chica y una imagen con Node y compilación de extensiones PHP no entraba.
+- **Decisión:** Construir la imagen sobre `dunglas/frankenphp:1-php8.4-alpine`, que ya trae `pdo_sqlite` y OPcache. La imagen no incluye Node: `public/build` se genera antes en la máquina de desarrollo con `npm run build`, y el Dockerfile falla si el manifiesto no existe.
+- **Consecuencias:** La imagen es más chica y el build es más rápido. El despliegue depende de que el build de frontend se haga antes de construir la imagen (documentado en [instalacion.md](instalacion.md)).
+
+## D-11 — Pruebas automatizadas con SQLite en memoria
+
+- **Estado:** Aceptada
+- **Contexto:** Las pruebas de PHPUnit deben correr igual en la máquina del desarrollador y en el servidor de integración continua, sin levantar un servidor MySQL en cada ejecución.
+- **Decisión:** `phpunit.xml` usa SQLite con base `:memory:` para las pruebas. MySQL 8 queda solo para el desarrollo y el despliegue (D-08).
+- **Consecuencias:** Las pruebas son rápidas y aisladas (cada una arranca con la base vacía). El motor de pruebas no es el mismo que el de producción, así que las consultas específicas de MySQL no quedan cubiertas por PHPUnit.
+
+## D-12 — Integración continua con GitHub Actions
+
+- **Estado:** Aceptada
+- **Contexto:** Las pruebas se ejecutaban a mano y no había forma de detectar una regresión al integrar ramas. Un defecto de mayúsculas en las rutas de Inertia (DEF-12) pasaba desapercibido en Windows y fallaba en Linux.
+- **Decisión:** Un workflow (`.github/workflows/tests.yml`) corre en cada push y pull request a `develop` y `main`: instala dependencias de PHP y de frontend, compila con Vite y ejecuta `php artisan test` con PHP 8.4 en Ubuntu.
+- **Consecuencias:** Las regresiones y diferencias entre sistemas operativos se detectan antes del merge. El tiempo de cada ejecución depende de la compilación de frontend.
